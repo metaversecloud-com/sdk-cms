@@ -1,8 +1,10 @@
 import express from "express";
 import {
   handleDropAsset,
+  handleGetDroppedAssets,
   handleGetGameState,
   handleRemoveDroppedAssetsByUniqueName,
+  handleAssetSearch,
   handleFireToast,
 } from "./controllers/index.js";
 import { getVersion } from "./utils/getVersion.js";
@@ -30,6 +32,7 @@ router.get("/system/health", (req, res) => {
 
 // Dropped Assets
 router.get("/game-state", handleGetGameState);
+router.get("/asset-search", handleAssetSearch);
 router.post("/dropped-asset", handleDropAsset);
 router.post("/remove-dropped-assets", handleRemoveDroppedAssetsByUniqueName);
 

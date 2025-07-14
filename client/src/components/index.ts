@@ -5,3 +5,5 @@ export * from "./DroppedAssetDetails.js";
 export * from "./Loading.js";
 export * from "./PageContainer.js";
 export * from "./PageFooter.js";
+export * from "./SearchBar.js";
+export * from "./SearchResult.js";

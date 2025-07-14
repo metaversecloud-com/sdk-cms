@@ -4,6 +4,7 @@ import {
   errorHandler,
   getCredentials,
   initializeDroppedAssetDataObject,
+  initializeWorldDataObject,
   Visitor,
 } from "../utils/index.js";
 import { IDroppedAsset } from "../types/DroppedAssetInterface.js";
@@ -19,6 +20,8 @@ export const handleGetGameState = async (req: Request, res: Response) => {
     // first instantiate to ensure it's existence and define it's proper structure.
     // The same should be true for World, User, and Visitor data objects
     await initializeDroppedAssetDataObject(droppedAsset as IDroppedAsset);
+    // init world data object
+    await initializeWorldDataObject();
 
     const visitor: VisitorInterface = await Visitor.get(visitorId, urlSlug, { credentials });
     const { isAdmin, displayName } = visitor;
