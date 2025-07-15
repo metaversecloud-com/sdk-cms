@@ -1,7 +1,12 @@
 import { useContext, useState } from "react";
 
 // components
-import { PageFooter, ConfirmationModal } from "@/components";
+import {
+  SearchBar,
+  SearchResult,
+  PageFooter,
+  ConfirmationModal,
+} from "@/components";
 
 // context
 import { GlobalDispatchContext, GlobalStateContext } from "@/context/GlobalContext";
@@ -9,79 +14,69 @@ import { GlobalDispatchContext, GlobalStateContext } from "@/context/GlobalConte
 // utils
 import { backendAPI, setErrorMessage } from "@/utils";
 
+// types
+import { AssetInfo } from "@/context/types";
+
 export const AdminView = () => {
   const dispatch = useContext(GlobalDispatchContext);
   const { droppedAsset } = useContext(GlobalStateContext);
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [assets, setAssets] = useState<AssetInfo[]>([]);
+  const [searching, setSearching] = useState(false);
+
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [areButtonsDisabled, setAreButtonsDisabled] = useState(false);
 
-  const handleToggleShowConfirmationModal = () => {
-    setShowConfirmationModal(!showConfirmationModal);
-  };
 
-  const handleDropAsset = async () => {
-    setAreButtonsDisabled(true);
+  const onSearch = async () => {
+    const trimmed = searchTerm.trim();
+    if (!trimmed) return;
 
-    backendAPI
-      .post("/dropped-asset")
-      .then(() => {
-        backendAPI.put("/world/fire-toast", { title: "Asset successfully dropped!" });
-      })
-      .catch((error) => setErrorMessage(dispatch, error))
-      .finally(() => {
-        setAreButtonsDisabled(false);
+    setSearching(true);
+    try {
+      const resp = await backendAPI.get("/asset-search", {
+        params: { search: trimmed },
       });
-  };
 
-  const handleRemoveDroppedAssets = async () => {
-    setAreButtonsDisabled(true);
-
-    backendAPI
-      .post("/remove-dropped-assets")
-      .then(() => {
-        backendAPI.put("/world/fire-toast", {
-          title: "Dropped assets successfully removed!",
-          text: "All dropped assets with matching unique name have been removed from this world.",
-        });
-      })
-      .catch((error) => setErrorMessage(dispatch, error))
-      .finally(() => {
-        setAreButtonsDisabled(false);
-      });
+      if (resp.data.success) {
+        const paredDown: AssetInfo[] = resp.data.assets.map((a: any) => ({
+          assetId: a.assetId,
+          uniqueName: a.uniqueName,
+          topLayerURL: a.topLayerURL,
+          bottomLayerURL: a.bottomLayerURL,
+        }));
+        setAssets(paredDown);
+      } else {
+        setAssets([]);
+      }
+    } catch (err: any) {
+      setErrorMessage(dispatch, err);
+    } finally {
+      setSearching(false);
+    }
   };
 
   return (
-    <div style={{ position: "relative" }}>
-      {droppedAsset && (
-        <img
-          className="w-96 h-96 object-cover rounded-2xl my-4"
-          alt="preview"
-          src={droppedAsset.topLayerURL || droppedAsset.bottomLayerURL}
-        />
-      )}
-      <PageFooter>
-        <button className="btn mt-2" disabled={areButtonsDisabled} onClick={handleDropAsset}>
-          Drop Asset
-        </button>
-        <button
-          className="btn btn-danger mt-2"
-          disabled={areButtonsDisabled}
-          onClick={() => handleToggleShowConfirmationModal()}
-        >
-          Remove Dropped Assets
-        </button>
-      </PageFooter>
+    <>
+      <SearchBar
+        value={searchTerm}
+        onChange={setSearchTerm}
+        onSearch={onSearch}
+        isSearching={searching}
+      />
 
-      {showConfirmationModal && (
-        <ConfirmationModal
-          title="Remove Dropped Assets"
-          message="Are you sure you want to remove all dropped assets? This action cannot be undone."
-          handleOnConfirm={handleRemoveDroppedAssets}
-          handleToggleShowConfirmationModal={handleToggleShowConfirmationModal}
-        />
+      {/* search results */}
+      {assets.length > 0 ? (
+        <ul className="rtsdk-results-list">
+          {assets.map((asset) => (
+            <SearchResult key={asset.assetId} {...asset} />
+          ))}
+        </ul>
+      ) : (
+        <p>No assets found.</p>
       )}
-    </div>
+    </>
   );
 };
 

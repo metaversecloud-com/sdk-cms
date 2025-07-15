@@ -1,10 +1,3 @@
-// import dotenv from "dotenv";
-// dotenv.config({ path: "../.env" });
-
-// const config = {
-//   interactiveSecret: process.env.INTERACTIVE_SECRET,
-// };
-
 import { Request, Response } from "express";
 import { World, errorHandler, getCredentials } from "../utils/index.js";
 import type { IDroppedAsset } from "../types/DroppedAssetInterface.js";
@@ -13,6 +6,7 @@ import { DroppedAssetFactory } from "@rtsdk/topia";
 // import type { DroppedAsset } from "@rtsdk/topia";
 import { DroppedAsset } from "../utils/topiaInit.js";
 //import { getWithUniqueName } from "@rtsdk/topia";
+import type { DroppedAssetInterface } from "@rtsdk/topia";
 
 export const handleAssetSearch = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -25,37 +19,17 @@ export const handleAssetSearch = async (req: Request, res: Response): Promise<Re
 
     console.log("search: ", typeof world);
     const assets = await world.fetchDroppedAssetsWithUniqueName({ uniqueName: search, isPartial: true });
-    // const assets = Object.values(world.droppedAssets);
-    //await world.fetchDroppedAssets();
+
     console.log(assets);
-    //const assets = Object.values(world.droppedAssets);
 
-    // const asset = await DroppedAsset.getWithUniqueName(search, urlSlug, interactiveSecret, credentials)
+    const a = assets[0];
+    await a.fetchDroppedAssetById();
+    console.log("clickable link: ", a.clickableLink);
 
-    // const first: DroppedAsset = assets[0];
-    // if (!first) {
-    //   console.log("no first");
-    //   return res.json({ assets, success: true });
-    // }
-    // console.log(assets);
+    // assets.forEach((a: DroppedAssetInterface) => {
+    //   console.log("link:", a.clickableLink);
+    // });
 
-    // for (let asset of assets) {
-    //   // asset.fetchAssetById();
-    //   console.log("asset");
-    //   console.log((asset as any).assetId);
-    //   console.log((asset as any).creationDatetime);
-    // }
-    // await first.fetchDroppedAssetById();
-    // const firstTyped = first as unknown as IDroppedAsset;
-    // console.log("first uniqueName: " + (first as any).uniqueName);
-
-    // const newAssets = assets as IDroppedAsset[];
-
-    // console.log("found assets: " + newAssets);
-
-    // for (let asset of newAssets) {
-    //   console.log(asset.uniqueName);
-    // }
 
     return res.json({ assets, success: true });
   } catch (error) {

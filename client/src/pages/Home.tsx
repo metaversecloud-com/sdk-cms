@@ -16,9 +16,9 @@ export const Home = () => {
   const { hasInteractiveParams } = useContext(GlobalStateContext);
 
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [assets, setAssets] = useState<AssetInfo[]>([]);
-  const [searching, setSearching] = useState(false);
+
+  const [contentMap, setContentMap] = useState<Record<string, AssetInfo>>({});
+  // const [loadingContentList, setLoadingContentList] = useState(false);
 
   useEffect(() => {
     if (hasInteractiveParams) {
@@ -26,7 +26,18 @@ export const Home = () => {
         .get("/game-state")
         .then((response) => {
           setGameState(dispatch, response.data);
+
+          // setLoadingContentList(true);
+          // return backendAPI.get("/content-list");
         })
+        // .then((resp) => {
+        //   if (resp.data.success) {
+        //     const map = resp.data.refreshedDroppedAssets as Record<string, AssetInfo>;
+        //     setContentMap(map);
+        //   } else {
+        //     setContentMap({});
+        //   }
+        // })
         .catch((error) => setErrorMessage(dispatch, error))
         .finally(() => {
           setIsLoading(false);
@@ -34,49 +45,9 @@ export const Home = () => {
     }
   }, [hasInteractiveParams]);
 
-  const onSearch = async () => {
-    if (!searchTerm.trim()) return;
-    setSearching(true);
-    try {
-      console.log("about to call asset-search");
-      const resp = await backendAPI.get("/asset-search", {
-        params: { search: searchTerm.trim() },
-      });
-      console.log("asset-search response:", resp.status, resp.data);
-      if (resp.data.success) {
-        // transform each full DroppedAsset into only the fields we need
-        const paredDown: AssetInfo[] = resp.data.assets.map((a: any) => ({
-          assetId: a.assetId,
-          uniqueName: a.uniqueName,
-          topLayerURL: a.topLayerURL,
-          bottomLayerURL: a.bottomLayerURL,
-        }));
-        setAssets(paredDown);
-      } else {
-        setAssets([]);
-      }
-    } catch (err: any) {
-      setErrorMessage(dispatch, err);
-    } finally {
-      setSearching(false);
-    }
-  };
-
   return (
     <PageContainer isLoading={isLoading} headerText="Content Manager">
-      {/* Search bar */}
-      <SearchBar value={searchTerm} onChange={setSearchTerm} onSearch={onSearch} isSearching={searching} />
-
-      {/* Results */}
-      {assets.length > 0 ? (
-        <ul className="rtsdk-results-list">
-          {assets.map((asset) => (
-            <SearchResult key={asset.assetId} {...asset} />
-          ))}
-        </ul>
-      ) : (
-        <p>No assets found.</p>
-      )}
+      content list
     </PageContainer>
   );
 };
