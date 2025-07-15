@@ -1,27 +1,41 @@
 import { errorHandler } from "./errorHandler.js";
+import { World } from "@rtsdk/topia";
 
 // change everything to world
-export const initializeWorldDataObject = async () => {
+export const initializeWorldDataObject = async (world: World) => {
   try {
     // if !world?.dataObject?.droppedAssets
     // if the above turns out to be not falsey: if (there's no keys in droppedAssets)
-    if (!droppedAsset?.dataObject?.droppedAssetCount) {
+    await world.fetchDataObject();
+    const dataObject = world.dataObject || {};
+    console.log("world data object: ", dataObject);
+
+    if (!(dataObject as any).droppedAssets) {
+      console.log("No droppedAssets section in world dataObject or droppedAssets is falsey");
       // adding a lockId and releaseLock will prevent race conditions and ensure the data object is being updated only once until either the time has passed or the operation is complete
-      const lockId = `${droppedAsset.id}-${new Date(Math.round(new Date().getTime() / 60000) * 60000)}`;
+      const lockId = `${world.urlSlug}-${new Date(Math.round(new Date().getTime() / 60000) * 60000)}`;
       // await world.setDataObject([droppedAssets: {}]);
+      await world.setDataObject({ ...dataObject, droppedAssets: {} }, { lock: { lockId, releaseLock: true } });
+      //.catch(() => console.warn("Unable to acquire lock, another process may be updating the world data object"));
+
       // run a test to check if we've already set with {} that this doesnt run again. Tweak line 7 if it does run again...
-      await droppedAsset
-        .setDataObject({ droppedAssetCount: 0 }, { lock: { lockId, releaseLock: true } })
-        .catch(() => console.warn("Unable to acquire lock, another process may be updating the data object"));
+      // await droppedAsset
+      //   .setDataObject({ droppedAssetCount: 0 }, { lock: { lockId, releaseLock: true } })
+      //   .catch(() => console.warn("Unable to acquire lock, another process may be updating the data object"));
+      await world.fetchDataObject();
+      const newDataObject = world.dataObject || {};
+      console.log("world data object: ", newDataObject);
+    } else {
+      console.log("droppedAssets exists:", (dataObject as any).droppedAssets);
     }
 
     return;
   } catch (error) {
     errorHandler({
       error,
-      functionName: "initializeDroppedAssetDataObject",
-      message: "Error initializing dropped asset data object",
+      functionName: "initializeWorldDataObject",
+      message: "Error initializing world data object",
     });
-    return await droppedAsset.fetchDataObject();
+    return await world.fetchDataObject();
   }
 };

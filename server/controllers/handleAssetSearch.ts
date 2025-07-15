@@ -18,13 +18,14 @@ export const handleAssetSearch = async (req: Request, res: Response): Promise<Re
   try {
     console.log("entering asset search");
     const credentials = getCredentials(req.query);
-    const { urlSlug} = credentials;
+    const { urlSlug } = credentials;
+    // @TODO?: save resources by instead using the same instances created in handleGetGameState? vvv
     const world = World.create(credentials.urlSlug, { credentials });
-    const search = ((req.query.search as string) || "").trim();
+    const search = (req.query.search as string) || "";
 
-    console.log("search: ", typeof search );
-    const assets = await world.fetchDroppedAssetsWithUniqueName( { uniqueName: 'h', isPartial: true, } );
-    // const assets = Object.values(world.droppedAssets); 
+    console.log("search: ", typeof world);
+    const assets = await world.fetchDroppedAssetsWithUniqueName({ uniqueName: search, isPartial: true });
+    // const assets = Object.values(world.droppedAssets);
     //await world.fetchDroppedAssets();
     console.log(assets);
     //const assets = Object.values(world.droppedAssets);
