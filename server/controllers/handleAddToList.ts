@@ -33,7 +33,7 @@ export const handleAddToList = async (req: Request, res: Response): Promise<Resp
     return errorHandler({
       error,
       functionName: "handleAddToList",
-      message: "Error added dropped asset to list",
+      message: "Error adding dropped asset to list",
       req,
       res,
     });

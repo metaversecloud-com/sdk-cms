@@ -39,7 +39,7 @@ export type ActionType = {
 export interface SearchBarProps {
   value: string;
   onChange: (newTerm: string) => void;
-  onSearch: () => void;
+  onSearch: (newValue?: string) => void;
   isSearching: boolean;
 }
 

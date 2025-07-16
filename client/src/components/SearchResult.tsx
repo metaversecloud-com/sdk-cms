@@ -29,17 +29,30 @@ export const SearchResult = ({ uniqueName, topLayerURL, bottomLayerURL, assetId 
   };
 
   return (
-    <li className="card p-3 mb-2">
-      <strong>{uniqueName}</strong>
-      {imageURL && (<img src={imageURL} alt={uniqueName}/>)}
+    <li className="card small">
+      <div className="card-image">{imageURL && <img src={imageURL} alt={uniqueName} />}</div>
 
-      <button
-        className="btn btn-primary mt-3"
-        onClick={handleAddToList}
-        disabled={adding || added}
-      >
-        {adding ? "Adding…" : added ? "Added" : "Add To List"}
-      </button>
+      <div className="card-details">
+        <h4 className="card-title">{uniqueName}</h4>
+        <p className="card-description p2">ID: {assetId}</p>
+
+        <div className="card-actions">
+          <button
+            className="btn btn-icon"
+            onClick={handleAddToList}
+            disabled={adding || added}
+            aria-label={adding ? "Adding..." : added ? "Added to list" : "Add to list"}
+          >
+            {adding ? (
+              "..."
+            ) : added ? (
+              <img src="https://sdk-style.s3.amazonaws.com/icons/check.svg" alt="" />
+            ) : (
+              <img src="https://sdk-style.s3.amazonaws.com/icons/star.svg" alt="" />
+            )}
+          </button>
+        </div>
+      </div>
     </li>
   );
 };

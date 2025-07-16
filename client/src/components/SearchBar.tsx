@@ -4,14 +4,14 @@ export const SearchBar = ({ value, onChange, onSearch, isSearching }: SearchBarP
   <div className="rtsdk-search-bar mb-4">
     <input
       type="text"
-      placeholder="Search assets…"
+      placeholder="Search by unique name..."
       className="input"
       value={value}
-      onChange={(e) => onChange(e.target.value)}
-      onKeyDown={(e) => e.key === "Enter" && onSearch()}
+      onChange={(e) => {
+        const newValue = e.target.value;
+        onChange(newValue);
+        onSearch(newValue);
+      }}
     />
-    <button className="btn btn-primary ml-2" onClick={onSearch} disabled={isSearching}>
-      {isSearching ? "Searching…" : "Search"}
-    </button>
   </div>
 );

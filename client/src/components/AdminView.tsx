@@ -1,12 +1,7 @@
 import { useContext, useState } from "react";
 
 // components
-import {
-  SearchBar,
-  SearchResult,
-  PageFooter,
-  ConfirmationModal,
-} from "@/components";
+import { SearchBar, SearchResult, PageFooter, ConfirmationModal } from "@/components";
 
 // context
 import { GlobalDispatchContext, GlobalStateContext } from "@/context/GlobalContext";
@@ -28,9 +23,8 @@ export const AdminView = () => {
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [areButtonsDisabled, setAreButtonsDisabled] = useState(false);
 
-
-  const onSearch = async () => {
-    const trimmed = searchTerm.trim();
+  const onSearch = async (searchValue?: string) => {
+    const trimmed = (searchValue ?? searchTerm).trim();
     if (!trimmed) return;
 
     setSearching(true);
@@ -59,12 +53,7 @@ export const AdminView = () => {
 
   return (
     <>
-      <SearchBar
-        value={searchTerm}
-        onChange={setSearchTerm}
-        onSearch={onSearch}
-        isSearching={searching}
-      />
+      <SearchBar value={searchTerm} onChange={setSearchTerm} onSearch={onSearch} isSearching={searching} />
 
       {/* search results */}
       {assets.length > 0 ? (
@@ -74,7 +63,10 @@ export const AdminView = () => {
           ))}
         </ul>
       ) : (
-        <p>No assets found.</p>
+        <div className="text-center">
+          <h4>No results found</h4>
+          <p className="p1 mt-4">There are no assets in the world with a matching unique name</p>
+        </div>
       )}
     </>
   );

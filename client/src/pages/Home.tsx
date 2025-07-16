@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 
 // components
-import { PageContainer, DroppedAssetDetails, SearchBar, SearchResult } from "@/components";
+import { PageContainer, DroppedAssetDetails, SearchBar, SearchResult, ContentList } from "@/components";
 
 // context
 import { GlobalDispatchContext, GlobalStateContext } from "@/context/GlobalContext";
@@ -28,16 +28,16 @@ export const Home = () => {
           setGameState(dispatch, response.data);
 
           // setLoadingContentList(true);
-          // return backendAPI.get("/content-list");
+          return backendAPI.get("/content-list");
         })
-        // .then((resp) => {
-        //   if (resp.data.success) {
-        //     const map = resp.data.refreshedDroppedAssets as Record<string, AssetInfo>;
-        //     setContentMap(map);
-        //   } else {
-        //     setContentMap({});
-        //   }
-        // })
+        .then((resp) => {
+          if (resp.data.success) {
+            const map = resp.data.refreshedDroppedAssets as Record<string, AssetInfo>;
+            setContentMap(map);
+          } else {
+            setContentMap({});
+          }
+        })
         .catch((error) => setErrorMessage(dispatch, error))
         .finally(() => {
           setIsLoading(false);
@@ -46,8 +46,8 @@ export const Home = () => {
   }, [hasInteractiveParams]);
 
   return (
-    <PageContainer isLoading={isLoading} headerText="Content Manager">
-      content list
+    <PageContainer isLoading={isLoading} headerText="Content" adminHeaderText="Search" >
+      <ContentList contentMap={contentMap} />
     </PageContainer>
   );
 };

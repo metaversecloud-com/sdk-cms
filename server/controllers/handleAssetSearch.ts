@@ -17,14 +17,18 @@ export const handleAssetSearch = async (req: Request, res: Response): Promise<Re
     const world = World.create(credentials.urlSlug, { credentials });
     const search = (req.query.search as string) || "";
 
-    console.log("search: ", typeof world);
+    if (search == "") {
+      return res.json({ assets: [], success: true });
+    }
+
+    console.log("search: ", search);
     const assets = await world.fetchDroppedAssetsWithUniqueName({ uniqueName: search, isPartial: true });
 
     console.log(assets);
 
-    const a = assets[0];
-    await a.fetchDroppedAssetById();
-    console.log("clickable link: ", a.clickableLink);
+    // const a = assets[0];
+    // await a.fetchDroppedAssetById();
+    // console.log("clickable link: ", a.clickableLink);
 
     // assets.forEach((a: DroppedAssetInterface) => {
     //   console.log("link:", a.clickableLink);
