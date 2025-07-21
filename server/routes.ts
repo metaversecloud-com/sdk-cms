@@ -6,6 +6,10 @@ import {
   handleAssetSearch,
   handleAddToList,
   handleGetList,
+  handleGetList2,
+  handleUpdateLink,
+  handleResetList,
+  handleTeleport,
   handleFireToast,
 } from "./controllers/index.js";
 import { getVersion } from "./utils/getVersion.js";
@@ -35,6 +39,9 @@ router.get("/system/health", (req, res) => {
 router.get("/game-state", handleGetGameState);
 router.get("/asset-search", handleAssetSearch);
 router.get("/content-list", handleGetList);
+router.put("/teleport", handleTeleport);
+router.put("/update-link", handleUpdateLink);
+router.put("/reset-list", handleResetList);
 router.post("/add-to-list", handleAddToList);
 router.post("/dropped-asset", handleDropAsset);
 router.post("/remove-dropped-assets", handleRemoveDroppedAssetsByUniqueName);

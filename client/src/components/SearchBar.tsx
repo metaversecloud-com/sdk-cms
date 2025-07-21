@@ -1,6 +1,6 @@
 import { SearchBarProps } from "@context/types";
 
-export const SearchBar = ({ value, onChange, onSearch, isSearching }: SearchBarProps) => (
+export const SearchBar = ({ value, onChange, onSearch }: SearchBarProps) => (
   <div className="rtsdk-search-bar mb-4">
     <input
       type="text"

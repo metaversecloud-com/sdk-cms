@@ -5,7 +5,7 @@ export const handleAddToList = async (req: Request, res: Response): Promise<Resp
   try {
     const credentials = getCredentials(req.query);
     const { profileId } = credentials;
-    const { uniqueName, topLayerURL, bottomLayerURL, assetId } = req.body;
+    const { uniqueName, topLayerURL, bottomLayerURL, assetId, position, link, assetName } = req.body;
 
     const world = World.create(credentials.urlSlug, { credentials });
     await world.fetchDataObject();
@@ -15,7 +15,7 @@ export const handleAddToList = async (req: Request, res: Response): Promise<Resp
         ? { ...dataObject.droppedAssets }
         : {};
 
-    currentDroppedAssets[assetId] = { uniqueName, topLayerURL, bottomLayerURL, profileId };
+    currentDroppedAssets[assetId] = { uniqueName, topLayerURL, bottomLayerURL, position, profileId, link, assetName };
 
     const lockId = `${world.urlSlug}-${new Date(Math.round(new Date().getTime() / 60000) * 60000)}`;
 

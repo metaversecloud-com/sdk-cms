@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 
 // components
-import { PageContainer, DroppedAssetDetails, SearchBar, SearchResult, ContentList } from "@/components";
+import { PageContainer, ContentList } from "@/components";
 
 // context
 import { GlobalDispatchContext, GlobalStateContext } from "@/context/GlobalContext";
@@ -12,13 +12,10 @@ import { backendAPI, setErrorMessage, setGameState } from "@/utils";
 import { AssetInfo } from "@/context/types";
 
 export const Home = () => {
-  const dispatch = useContext(GlobalDispatchContext);
+  const dispatch = useContext(GlobalDispatchContext)!;
   const { hasInteractiveParams } = useContext(GlobalStateContext);
 
   const [isLoading, setIsLoading] = useState(true);
-
-  const [contentMap, setContentMap] = useState<Record<string, AssetInfo>>({});
-  // const [loadingContentList, setLoadingContentList] = useState(false);
 
   useEffect(() => {
     if (hasInteractiveParams) {
@@ -33,9 +30,9 @@ export const Home = () => {
         .then((resp) => {
           if (resp.data.success) {
             const map = resp.data.refreshedDroppedAssets as Record<string, AssetInfo>;
-            setContentMap(map);
+            dispatch({ type: "SET_CONTENT_MAP", payload: map });
           } else {
-            setContentMap({});
+            dispatch({ type: "SET_CONTENT_MAP", payload: {} });
           }
         })
         .catch((error) => setErrorMessage(dispatch, error))
@@ -43,11 +40,11 @@ export const Home = () => {
           setIsLoading(false);
         });
     }
-  }, [hasInteractiveParams]);
+  }, [hasInteractiveParams, dispatch]);
 
   return (
-    <PageContainer isLoading={isLoading} headerText="Content" adminHeaderText="Search" >
-      <ContentList contentMap={contentMap} />
+    <PageContainer isLoading={isLoading} headerText="Content" adminHeaderText="Search">
+      <ContentList />
     </PageContainer>
   );
 };

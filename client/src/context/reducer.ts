@@ -5,6 +5,7 @@ import {
   SET_GAME_STATE,
   SET_HAS_SETUP_BACKEND,
   SET_INTERACTIVE_PARAMS,
+  SET_CONTENT_MAP,
 } from "./types";
 
 const globalReducer = (state: InitialState, action: ActionType) => {
@@ -34,6 +35,11 @@ const globalReducer = (state: InitialState, action: ActionType) => {
       return {
         ...state,
         error: payload?.error,
+      };
+    case SET_CONTENT_MAP:
+      return {
+        ...state,
+        contentMap: payload,
       };
 
     default: {

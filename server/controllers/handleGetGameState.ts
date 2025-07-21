@@ -17,7 +17,6 @@ export const handleGetGameState = async (req: Request, res: Response) => {
     const { assetId, urlSlug, visitorId } = credentials;
     const droppedAsset = await DroppedAsset.get(assetId, urlSlug, { credentials });
     const world = World.create(credentials.urlSlug, { credentials });
-    console.log("TYPEEEEEEEEE: " + typeof world);
 
     // If the application will make any updates to a dropped asset's data object we need to
     // first instantiate to ensure it's existence and define it's proper structure.

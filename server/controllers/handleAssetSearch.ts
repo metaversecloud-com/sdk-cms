@@ -1,20 +1,22 @@
 import { Request, Response } from "express";
 import { World, errorHandler, getCredentials } from "../utils/index.js";
-import type { IDroppedAsset } from "../types/DroppedAssetInterface.js";
-//import type { DroppedAsset } from "@rtsdk/topia";
-import { DroppedAssetFactory } from "@rtsdk/topia";
-// import type { DroppedAsset } from "@rtsdk/topia";
-import { DroppedAsset } from "../utils/topiaInit.js";
-//import { getWithUniqueName } from "@rtsdk/topia";
+
 import type { DroppedAssetInterface } from "@rtsdk/topia";
 
 export const handleAssetSearch = async (req: Request, res: Response): Promise<Response> => {
   try {
-    console.log("entering asset search");
     const credentials = getCredentials(req.query);
     const { urlSlug } = credentials;
-    // @TODO?: save resources by instead using the same instances created in handleGetGameState? vvv
-    const world = World.create(credentials.urlSlug, { credentials });
+
+    // @TODO?: can I save resources by instead using the same instances created in handleGetGameState? vvv
+    const world = World.create(urlSlug, { credentials });
+
+    await world.fetchDataObject();
+    const dataObject = (world.dataObject as any) || {};
+    const currentDroppedAssets: Record<string, any> =
+      typeof dataObject.droppedAssets === "object" && dataObject.droppedAssets !== null
+        ? { ...dataObject.droppedAssets }
+        : {};
     const search = (req.query.search as string) || "";
 
     if (search == "") {
@@ -22,18 +24,12 @@ export const handleAssetSearch = async (req: Request, res: Response): Promise<Re
     }
 
     console.log("search: ", search);
-    const assets = await world.fetchDroppedAssetsWithUniqueName({ uniqueName: search, isPartial: true });
+    const assets = (await world.fetchDroppedAssetsWithUniqueName({
+      uniqueName: search,
+      isPartial: true,
+    })) as DroppedAssetInterface[];
 
-    console.log(assets);
-
-    // const a = assets[0];
-    // await a.fetchDroppedAssetById();
-    // console.log("clickable link: ", a.clickableLink);
-
-    // assets.forEach((a: DroppedAssetInterface) => {
-    //   console.log("link:", a.clickableLink);
-    // });
-
+    console.log("assets: ", assets);
 
     return res.json({ assets, success: true });
   } catch (error) {

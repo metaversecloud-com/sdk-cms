@@ -1,21 +1,19 @@
+import { useContext } from "react";
+
+import { GlobalStateContext } from "@/context/GlobalContext";
+
 import { ContentCard } from "./ContentCard";
-import type { AssetInfo } from "@/context/types";
 
-interface ContentListProps {
-  contentMap: Record<string, AssetInfo>;
-}
-
-export const ContentList = ({ contentMap }: ContentListProps) => {
+export const ContentList = () => {
+  const { contentMap = {} } = useContext(GlobalStateContext);
   const entries = Object.entries(contentMap);
 
   if (entries.length === 0) {
     return (
-      <>
-        <h4>No results found</h4>
-        <p className="p1">
-          There are no assets in the world with a matching unique name
-        </p>
-      </>
+      <div className="text-center">
+        <h4>Your content list is empty</h4>
+        <p className="p1 mt-4">No assets have been added to your content list.</p>
+      </div>
     );
   }
 
@@ -28,6 +26,9 @@ export const ContentList = ({ contentMap }: ContentListProps) => {
           uniqueName={info.uniqueName}
           topLayerURL={info.topLayerURL}
           bottomLayerURL={info.bottomLayerURL}
+          position={info.position}
+          link={info.link}
+          assetName={info.assetName}
         />
       ))}
     </div>

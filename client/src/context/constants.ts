@@ -5,6 +5,5 @@ export const initialState = {
   hasSetupBackend: false,
   profileId: "",
   sceneDropId: "",
+  contentMap: {},
 };
-
-
