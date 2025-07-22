@@ -39,7 +39,7 @@ export const AdminView = () => {
           topLayerURL: a.topLayerURL,
           bottomLayerURL: a.bottomLayerURL,
           position: a.position,
-          link: a.link,
+          links: a.clickableLinks,
           assetName: a.assetName,
         }));
         setAssets(paredDown);
@@ -72,7 +72,7 @@ export const AdminView = () => {
       {assets.length > 0 ? (
         <ul className="rtsdk-results-list">
           {assets.map((asset) => (
-            <SearchResult key={asset.assetId} {...asset} isAdded={isAdded(asset.assetId)} />
+            <SearchResult key={asset.assetId} {...asset} isAdded={isAdded(asset.assetId)}  />
           ))}
         </ul>
       ) : (

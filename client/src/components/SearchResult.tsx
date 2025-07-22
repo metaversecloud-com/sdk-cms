@@ -16,7 +16,7 @@ export const SearchResult = ({
   bottomLayerURL,
   assetId,
   position,
-  link,
+  links,
   isAdded,
   assetName,
 }: SearchResultProps) => {
@@ -43,14 +43,14 @@ export const SearchResult = ({
         bottomLayerURL,
         assetId,
         position,
-        link,
+        links,
         assetName,
       });
       if (resp.data.success) {
         setAdded(true);
         const newMap = {
           ...contentMap,
-          [assetId]: { uniqueName, topLayerURL, bottomLayerURL, position, link, assetName },
+          [assetId]: { uniqueName, topLayerURL, bottomLayerURL, position, links, assetName },
         };
         dispatch({ type: "SET_CONTENT_MAP", payload: newMap });
       } else {

@@ -27,7 +27,7 @@ export const ContentList = () => {
           topLayerURL={info.topLayerURL}
           bottomLayerURL={info.bottomLayerURL}
           position={info.position}
-          link={info.link}
+          links={info.links}
           assetName={info.assetName}
         />
       ))}

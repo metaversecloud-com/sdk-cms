@@ -1,16 +1,21 @@
 import { Request, Response } from "express";
 import { World, errorHandler, getCredentials } from "../utils/index.js";
 
-import { DroppedAssetClickType } from "@rtsdk/topia";
-
+export interface ClickableLinkInfo {
+  clickableLink:            string;
+  clickableLinkTitle:       string;
+  isForceLinkInIframe:      boolean;
+  isOpenLinkInDrawer:       boolean;
+  linkId:                   string;
+}
 
 export const handleUpdateLink = async (req: Request, res: Response): Promise<Response> => {
   try {
     const credentials = getCredentials(req.query);
     const { profileId, interactiveNonce, interactivePublicKey, urlSlug, visitorId } = credentials;
-    const { assetId, link } = req.body as {
+    const { assetId, links } = req.body as {
       assetId: string;
-      link: string;
+      links: ClickableLinkInfo[];
     };
 
     const world = World.create(credentials.urlSlug, { credentials });
@@ -22,7 +27,7 @@ export const handleUpdateLink = async (req: Request, res: Response): Promise<Res
         : {};
     const uniqueName = currentDroppedAssets[assetId].uniqueName
 
-    currentDroppedAssets[assetId].link = link
+    currentDroppedAssets[assetId].links = links
 
     const lockId = `${world.urlSlug}-${new Date(Math.round(new Date().getTime() / 60000) * 60000)}`;
 
@@ -31,19 +36,21 @@ export const handleUpdateLink = async (req: Request, res: Response): Promise<Res
       { lock: { lockId, releaseLock: true } },
     );
 
-    // @TODO: also update the actual asset vv
     const assets = await world.fetchDroppedAssetsWithUniqueName({ uniqueName: uniqueName, isPartial: false });
     for (let asset of assets) {
-      asset.updateClickType({
-        "clickType": "link" as DroppedAssetClickType,
-        "clickableLink": link,
-        "clickableLinkTitle": "link",
-      });
+      for (let link of links) {
+        if (link.linkId) {
+          asset.updateClickableLinkMulti({
+            "clickableLink": link.clickableLink,
+            "existingLinkId": link.linkId,
+          });
+        } else {
+          asset.updateClickableLinkMulti({
+            "clickableLink": link.clickableLink,
+          });
+        }
+      }
     }
-
-    await world.fetchDataObject();
-    const newDataObject = (world.dataObject as any) || {};
-    console.log("newDataObject: ", newDataObject);
 
     return res.json({ success: true });
   } catch (error) {

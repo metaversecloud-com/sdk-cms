@@ -1,5 +1,6 @@
 import { useContext, useState } from "react";
 import type { AssetInfo } from "@/context/types";
+import type { ClickableLinkInfo } from "@/context/types";
 
 // context
 import { GlobalDispatchContext, GlobalStateContext } from "@/context/GlobalContext";
@@ -14,11 +15,14 @@ interface ContentCardProps extends AssetInfo {
   assetId: string;
 }
 
-export const ContentCard = ({ assetId, uniqueName, topLayerURL, bottomLayerURL, position, link }: ContentCardProps) => {
+export const ContentCard = ({ assetId, uniqueName, topLayerURL, bottomLayerURL, position, links }: ContentCardProps) => {
   const imageURL = topLayerURL || bottomLayerURL || "";
   const dispatch = useContext(GlobalDispatchContext);
   const { visitor } = useContext(GlobalStateContext);
-  const usableLink = link || "";
+  const usableLinks : ClickableLinkInfo[] = [];
+  for (let link of links) {
+    if (link) usableLinks.push(link);
+  }
 
   const [showLinkModal, setShowLinkModal] = useState(false);
 
@@ -58,7 +62,7 @@ export const ContentCard = ({ assetId, uniqueName, topLayerURL, bottomLayerURL, 
       </div>
 
       {showLinkModal && (
-        <LinkModal assetId={assetId} currentLink={usableLink} onClose={() => setShowLinkModal(false)} />
+        <LinkModal assetId={assetId} currentLinks={usableLinks} onClose={() => setShowLinkModal(false)} />
       )}
     </>
   );

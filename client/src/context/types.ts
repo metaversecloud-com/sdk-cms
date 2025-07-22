@@ -52,6 +52,14 @@ export interface AssetInfo {
     x: number;
     y: number;
   };
-  link: string;
+  links: ClickableLinkInfo[];
   assetName: string;
+}
+
+export interface ClickableLinkInfo {
+  clickableLink:            string;
+  clickableLinkTitle:       string;
+  isForceLinkInIframe:      boolean;
+  isOpenLinkInDrawer:       boolean;
+  linkId:                   string;
 }
