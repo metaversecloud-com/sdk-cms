@@ -15,11 +15,18 @@ interface ContentCardProps extends AssetInfo {
   assetId: string;
 }
 
-export const ContentCard = ({ assetId, uniqueName, topLayerURL, bottomLayerURL, position, links }: ContentCardProps) => {
+export const ContentCard = ({
+  assetId,
+  uniqueName,
+  topLayerURL,
+  bottomLayerURL,
+  position,
+  links,
+}: ContentCardProps) => {
   const imageURL = topLayerURL || bottomLayerURL || "";
   const dispatch = useContext(GlobalDispatchContext);
   const { visitor } = useContext(GlobalStateContext);
-  const usableLinks : ClickableLinkInfo[] = [];
+  const usableLinks: ClickableLinkInfo[] = [];
   for (let link of links) {
     if (link) usableLinks.push(link);
   }
@@ -42,7 +49,9 @@ export const ContentCard = ({ assetId, uniqueName, topLayerURL, bottomLayerURL, 
   return (
     <>
       <div className="card small" key={assetId}>
-        <div className="card-image" style={{overflow: "hidden"}}>{imageURL && <img src={imageURL} alt={uniqueName} />}</div>
+        <div className="card-image" style={{ overflow: "hidden" }}>
+          {imageURL && <img src={imageURL} alt={uniqueName} />}
+        </div>
 
         <div className="card-details">
           <h4 className="card-title">{uniqueName}</h4>

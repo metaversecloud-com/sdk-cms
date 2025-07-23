@@ -36,8 +36,25 @@ export const LinkModal = ({
 
   // make sure link is ok
   const isValid = links.every((ln) => {
-    const t = ln.clickableLink.trim().toLowerCase();
-    return t.startsWith("https://") || t.startsWith("http://");
+    const s = ln.clickableLink.trim();
+    if (s === "") return true; // allow empty → treated as deletion
+
+    // 1) must start with http:// or https://
+    const m = s.match(/^(https?):\/\/([^\/]+)(\/.*)?$/i);
+    if (!m) return false;
+
+    const host = m[2];
+    // 2) disallow dangling dot
+    if (host.endsWith(".")) return false;
+
+    const parts = host.split(".");
+    if (parts.length === 1) {
+      // single‐label host: must start with a letter
+      return /^[A-Za-z][A-Za-z0-9-]*$/.test(parts[0]);
+    }
+
+    // multi‐label host: each segment can start with letter or digit
+    return parts.every((seg) => /^[A-Za-z0-9][A-Za-z0-9-]*$/.test(seg));
   });
 
   const onUpdate = async () => {
@@ -45,12 +62,17 @@ export const LinkModal = ({
     setLoading(true);
     setDisabled(true);
     try {
-      await backendAPI.put("/update-link", { assetId, links });
+      const resp = await backendAPI.put("/update-link", { assetId, links });
+      const newLinks: ClickableLinkInfo[] = resp.data.newLinks;
+
+      setLinks(newLinks);
+
+      //  correct local context
       const newMap = {
         ...contentMap,
         [assetId]: {
           ...contentMap[assetId],
-          links,
+          links: newLinks,
         },
       };
       dispatch({ type: "SET_CONTENT_MAP", payload: newMap });
@@ -78,34 +100,15 @@ export const LinkModal = ({
     }
   };
 
-  const onLinkDelete = async (index: number) => {
-    const toDelete = links[index];
-
-    // ui correct
-    const updatedLinks = links.filter((_, i) => i !== index);
-    setLinks(updatedLinks);
-
-    // update globaL context and backend
-    try {
-      if (toDelete.linkId) {
-        await backendAPI.delete("/delete-link", {
-          params: { assetId, linkId: toDelete.linkId },
-        });
-      }
-
-      const newMap = {
-        ...contentMap,
-        [assetId]: {
-          ...contentMap[assetId],
-          links: updatedLinks,
-        },
-      };
-      dispatch({ type: "SET_CONTENT_MAP", payload: newMap });
-    } catch (err: any) {
-      // roll back UI
-      setLinks(links);
-      setErrorMessage(dispatch, err);
-    }
+  // ui only action
+  const onLinkDelete = (index: number) => {
+    setLinks((prev) =>
+      prev.map((ln, i) =>
+        i === index
+          ? { ...ln, clickableLink: "" } // clear the URL
+          : ln,
+      ),
+    );
   };
 
   return (
@@ -126,22 +129,16 @@ export const LinkModal = ({
               }}
               placeholder="https://example.com"
             />
-            <button className="btn btn-icon" onClick={() => onLinkDelete(i)} disabled={disabled || loading}>
-              <img src="https://sdk-style.s3.amazonaws.com/icons/delete.svg" alt="Delete link" width={20} height={20} />
+            <button className=" ml-2 p-2" onClick={() => onLinkDelete(i)} disabled={disabled || loading}>
+              <img src="https://sdk-style.s3.amazonaws.com/icons/delete.svg" width={20} height={20} />
             </button>
           </div>
         ))}
 
-        {/* add btn below ! */}
         {links.length < 5 && (
           <div className="mb-4 flex justify-center">
             <button className="btn btn-icon" onClick={addField} disabled={disabled || loading}>
-              <img
-                src="https://sdk-style.s3.amazonaws.com/icons/chevronDown.svg"
-                alt="Add link"
-                width={20}
-                height={20}
-              />
+              <img src="https://sdk-style.s3.amazonaws.com/icons/chevronDown.svg" width={20} height={20} />
             </button>
           </div>
         )}

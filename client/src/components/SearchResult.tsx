@@ -65,7 +65,9 @@ export const SearchResult = ({
 
   return (
     <li className="card small">
-      <div className="card-image" style={{overflow: "hidden"}}>{imageURL && <img src={imageURL} alt={uniqueName} />}</div>
+      <div className="card-image" style={{ overflow: "hidden" }}>
+        {imageURL && <img src={imageURL} alt={uniqueName} />}
+      </div>
 
       <div className="card-details">
         <h4 className="card-title">{assetName}</h4>

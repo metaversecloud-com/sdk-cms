@@ -72,7 +72,7 @@ export const AdminView = () => {
       {assets.length > 0 ? (
         <ul className="rtsdk-results-list">
           {assets.map((asset) => (
-            <SearchResult key={asset.assetId} {...asset} isAdded={isAdded(asset.assetId)}  />
+            <SearchResult key={asset.assetId} {...asset} isAdded={isAdded(asset.assetId)} />
           ))}
         </ul>
       ) : (
@@ -92,7 +92,7 @@ export const AdminView = () => {
         <ConfirmationModal
           title="Reset content list?"
           message="This will clear the current content list for this world. Are you sure?"
-          handleOnConfirm={handleReset} 
+          handleOnConfirm={handleReset}
           handleToggleShowConfirmationModal={() => setShowConfirmationModal((s) => !s)}
         />
       )}

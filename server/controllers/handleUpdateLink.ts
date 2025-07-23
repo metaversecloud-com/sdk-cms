@@ -1,12 +1,14 @@
 import { Request, Response } from "express";
 import { World, errorHandler, getCredentials } from "../utils/index.js";
 
+import type { DroppedAssetInterface, DroppedAssetLinkType } from "@rtsdk/topia";
+
 export interface ClickableLinkInfo {
-  clickableLink:            string;
-  clickableLinkTitle:       string;
-  isForceLinkInIframe:      boolean;
-  isOpenLinkInDrawer:       boolean;
-  linkId:                   string;
+  clickableLink: string;
+  clickableLinkTitle: string;
+  isForceLinkInIframe: boolean;
+  isOpenLinkInDrawer: boolean;
+  linkId: string;
 }
 
 export const handleUpdateLink = async (req: Request, res: Response): Promise<Response> => {
@@ -25,9 +27,9 @@ export const handleUpdateLink = async (req: Request, res: Response): Promise<Res
       typeof dataObject.droppedAssets === "object" && dataObject.droppedAssets !== null
         ? { ...dataObject.droppedAssets }
         : {};
-    const uniqueName = currentDroppedAssets[assetId].uniqueName
+    const uniqueName = currentDroppedAssets[assetId].uniqueName;
 
-    currentDroppedAssets[assetId].links = links
+    currentDroppedAssets[assetId].links = links;
 
     const lockId = `${world.urlSlug}-${new Date(Math.round(new Date().getTime() / 60000) * 60000)}`;
 
@@ -36,23 +38,48 @@ export const handleUpdateLink = async (req: Request, res: Response): Promise<Res
       { lock: { lockId, releaseLock: true } },
     );
 
+    // @TODO: again weird stuff if duplicate UniqueName
     const assets = await world.fetchDroppedAssetsWithUniqueName({ uniqueName: uniqueName, isPartial: false });
-    for (let asset of assets) {
-      for (let link of links) {
-        if (link.linkId) {
-          asset.updateClickableLinkMulti({
-            "clickableLink": link.clickableLink,
-            "existingLinkId": link.linkId,
-          });
-        } else {
-          asset.updateClickableLinkMulti({
-            "clickableLink": link.clickableLink,
-          });
-        }
+    const asset = assets[0];
+    for (let link of links) {
+      console.log("link.clickableLink: ", link.clickableLink, " for linkId: ", link.linkId);
+      if (link.clickableLink === "") {
+        // user removing existing link
+        console.log("removing link ", link.clickableLink);
+        await asset.removeClickableLink({ linkId: link.linkId });
+        continue;
+      }
+      if (link.linkId) {
+        // user updating old link
+        // pull linkId out so it doesn’t end up passed as linkId instead of existingLinkId
+        const { linkId, ...rest } = link;
+        await asset.updateClickableLinkMulti({
+          ...rest,
+          existingLinkId: link.linkId,
+        });
+      } else {
+        // user adding a fresh (new) link
+        // const newLink: DroppedAssetLinkType = { clickableLink: link.clickableLink };
+        // const currentAssetLinks = (asset as any).clickableLinks ?? [];
+        // await asset.setClickableLinkMulti({
+        //   clickableLinks: [...currentAssetLinks, { clickableLink: link.clickableLink, }],
+        // });
+        // console.log("inside of setClickableLinkMulti: ", {
+        //   clickableLinks: [...currentAssetLinks, { clickableLink: link.clickableLink }],
+        // });
+        await asset.updateClickableLinkMulti({
+          clickableLink: link.clickableLink,
+        });
       }
     }
 
-    return res.json({ success: true });
+    const newAssets = (await world.fetchDroppedAssetsWithUniqueName({
+      uniqueName: uniqueName,
+      isPartial: false,
+    })) as DroppedAssetInterface[];
+    const newLinks = (newAssets[0] as any).clickableLinks;
+
+    return res.json({ newLinks, success: true });
   } catch (error) {
     return errorHandler({
       error,

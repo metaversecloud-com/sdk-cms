@@ -18,16 +18,18 @@ export const handleGetList = async (req: Request, res: Response): Promise<Respon
     for (const assetId of Object.keys(droppedAssets)) {
       const uName = droppedAssets[assetId].uniqueName;
       if (uName) {
-        // @TODO: weird things may happen if multiple assets w/ same uniqueName, find proper way or fix
+        // @TODO: weird things may happen if multiple assets w/ same uniqueName?, find proper way or fix
         const assets = (await world.fetchDroppedAssetsWithUniqueName({
           uniqueName: uName,
           isPartial: false,
         })) as DroppedAssetInterface[];
-        const { topLayerURL, bottomLayerURL } = assets[0];
+        // @TODO fix error suppressor in line below once clickableLinks is added to DroppedAssetInterface
+        const { topLayerURL, bottomLayerURL, clickableLinks } = assets[0] as any;
         refreshedDroppedAssets[assetId] = {
           ...droppedAssets[assetId],
           topLayerURL: topLayerURL ?? droppedAssets[assetId].topLayerURL,
           bottomLayerURL: bottomLayerURL ?? droppedAssets[assetId].bottomLayerURL,
+          links: clickableLinks,
         };
       }
     }
