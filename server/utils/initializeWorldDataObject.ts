@@ -11,7 +11,7 @@ export const initializeWorldDataObject = async (world: World) => {
 
     if (!(dataObject as any).droppedAssets) {
       console.log("No droppedAssets section in world dataObject or droppedAssets is falsey");
-      // adding a lockId and releaseLock will prevent race conditions and ensure the data object is being updated only once until either the time has passed or the operation is complete
+
       const lockId = `${world.urlSlug}-${new Date(Math.round(new Date().getTime() / 60000) * 60000)}`;
 
       await world.setDataObject({ ...dataObject, droppedAssets: {} }, { lock: { lockId, releaseLock: true } });

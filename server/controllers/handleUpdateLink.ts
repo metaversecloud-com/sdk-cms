@@ -14,7 +14,6 @@ export interface ClickableLinkInfo {
 export const handleUpdateLink = async (req: Request, res: Response): Promise<Response> => {
   try {
     const credentials = getCredentials(req.query);
-    const { profileId, interactiveNonce, interactivePublicKey, urlSlug, visitorId } = credentials;
     const { assetId, links } = req.body as {
       assetId: string;
       links: ClickableLinkInfo[];
@@ -59,16 +58,10 @@ export const handleUpdateLink = async (req: Request, res: Response): Promise<Res
         });
       } else {
         // user adding a fresh (new) link
-        // const newLink: DroppedAssetLinkType = { clickableLink: link.clickableLink };
-        // const currentAssetLinks = (asset as any).clickableLinks ?? [];
-        // await asset.setClickableLinkMulti({
-        //   clickableLinks: [...currentAssetLinks, { clickableLink: link.clickableLink, }],
-        // });
-        // console.log("inside of setClickableLinkMulti: ", {
-        //   clickableLinks: [...currentAssetLinks, { clickableLink: link.clickableLink }],
-        // });
         await asset.updateClickableLinkMulti({
           clickableLink: link.clickableLink,
+          isForceLinkInIframe: false,
+          isOpenLinkInDrawer: false,
         });
       }
     }

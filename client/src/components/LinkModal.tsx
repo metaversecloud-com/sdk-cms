@@ -37,23 +37,19 @@ export const LinkModal = ({
   // make sure link is ok
   const isValid = links.every((ln) => {
     const s = ln.clickableLink.trim();
-    if (s === "") return true; // allow empty → treated as deletion
+    if (s === "") return true; // allow empty bc treated as deletion
 
-    // 1) must start with http:// or https://
+    // http:// or https://
     const m = s.match(/^(https?):\/\/([^\/]+)(\/.*)?$/i);
     if (!m) return false;
 
     const host = m[2];
-    // 2) disallow dangling dot
     if (host.endsWith(".")) return false;
 
     const parts = host.split(".");
     if (parts.length === 1) {
-      // single‐label host: must start with a letter
       return /^[A-Za-z][A-Za-z0-9-]*$/.test(parts[0]);
     }
-
-    // multi‐label host: each segment can start with letter or digit
     return parts.every((seg) => /^[A-Za-z0-9][A-Za-z0-9-]*$/.test(seg));
   });
 
@@ -102,13 +98,7 @@ export const LinkModal = ({
 
   // ui only action
   const onLinkDelete = (index: number) => {
-    setLinks((prev) =>
-      prev.map((ln, i) =>
-        i === index
-          ? { ...ln, clickableLink: "" } // clear the URL
-          : ln,
-      ),
-    );
+    setLinks((prev) => prev.map((ln, i) => (i === index ? { ...ln, clickableLink: "" } : ln)));
   };
 
   return (

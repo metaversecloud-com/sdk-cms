@@ -23,6 +23,7 @@ export const AdminView = () => {
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [areButtonsDisabled, setAreButtonsDisabled] = useState(false);
 
+  // @TODO: pass areButtonsDisabled into each search result component?
   const onSearch = async (searchValue?: string) => {
     const trimmed = (searchValue ?? searchTerm).trim();
     if (!trimmed) return;

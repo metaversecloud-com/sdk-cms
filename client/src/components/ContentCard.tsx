@@ -30,6 +30,8 @@ export const ContentCard = ({
   for (let link of links) {
     if (link) usableLinks.push(link);
   }
+  const linkStrings = links.map((ln) => ln.clickableLink);
+  const linksText = linkStrings.join(", ");
 
   const [showLinkModal, setShowLinkModal] = useState(false);
 
@@ -55,7 +57,7 @@ export const ContentCard = ({
 
         <div className="card-details">
           <h4 className="card-title">{uniqueName}</h4>
-          <p className="card-description p2">ID: {assetId}</p>
+          <p className="card-description p2">{linksText}</p>
 
           <div className="card-actions">
             {visitor?.isAdmin && (

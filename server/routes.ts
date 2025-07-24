@@ -6,7 +6,6 @@ import {
   handleAssetSearch,
   handleAddToList,
   handleGetList,
-  handleGetList2,
   handleUpdateLink,
   handleResetList,
   handleTeleport,
