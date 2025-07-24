@@ -79,7 +79,20 @@ export const AdminView = () => {
       ) : (
         <div className="text-center">
           <h4>No results found</h4>
-          <p className="p1 mt-4">There are no assets in the world with a matching unique name</p>
+          <div className="space-y-5">
+            <p className="p1">There are no assets in the world with a matching unique name</p>
+            <p className="p1">
+              Find out how to add a unique name to an asset{" "}
+              <a
+                href="https://www.notion.so/Giving-Unique-Names-239a1cfb811f80a295dcef175e060aca?source=copy_link"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 underline hover:text-blue-700"
+              >
+                here
+              </a>
+            </p>
+          </div>
         </div>
       )}
 
