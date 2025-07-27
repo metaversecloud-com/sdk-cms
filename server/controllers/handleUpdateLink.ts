@@ -43,11 +43,16 @@ export const handleUpdateLink = async (req: Request, res: Response): Promise<Res
     for (let link of links) {
       console.log("link.clickableLink: ", link.clickableLink, " for linkId: ", link.linkId);
       if (link.clickableLink === "") {
-        // user removing existing link
-        console.log("removing link ", link.clickableLink);
-        await asset.removeClickableLink({ linkId: link.linkId });
-        continue;
-      }
+        if (link.linkId) {
+          // user removing existing link
+          console.log("removing link ", link.clickableLink);
+          await asset.removeClickableLink({ linkId: link.linkId });
+          continue;
+        }
+        else {
+          continue; 
+        }
+      } 
       if (link.linkId) {
         // user updating old link
         // pull linkId out so it doesn’t end up passed as linkId instead of existingLinkId
