@@ -47,11 +47,8 @@ export const handleUpdateLink = async (req: Request, res: Response): Promise<Res
           // user removing existing link
           console.log("removing link ", link.clickableLink);
           await asset.removeClickableLink({ linkId: link.linkId });
-          continue;
         }
-        else {
-          continue; 
-        }
+        continue;
       } 
       if (link.linkId) {
         // user updating old link

@@ -56,7 +56,11 @@ export const ContentCard = ({
         </div>
 
         <div className="card-details">
-          <h4 className="card-title">{uniqueName}</h4>
+          <h4 className="card-title" 	style={{
+            whiteSpace: "normal",
+            wordBreak: "break-word",
+            overflowWrap: "break-word",
+	        }}>{uniqueName}</h4>
           <p className="card-description p2">{linksText}</p>
 
           <div className="card-actions">
