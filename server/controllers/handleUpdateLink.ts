@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { World, errorHandler, getCredentials } from "../utils/index.js";
 
-import type { DroppedAssetInterface, DroppedAssetLinkType } from "@rtsdk/topia";
+import type { DroppedAssetInterface, DroppedAsset, DroppedAssetLinkType } from "@rtsdk/topia";
 
 export interface ClickableLinkInfo {
   clickableLink: string;
@@ -37,11 +37,20 @@ export const handleUpdateLink = async (req: Request, res: Response): Promise<Res
       { lock: { lockId, releaseLock: true } },
     );
 
-    // @TODO: again weird stuff if duplicate UniqueName
-    const assets = await world.fetchDroppedAssetsWithUniqueName({ uniqueName: uniqueName, isPartial: false });
-    const asset = assets[0];
+    // get asset
+    const assets = (await world.fetchDroppedAssetsWithUniqueName({
+      uniqueName: uniqueName,
+      isPartial: false,
+    })) as (DroppedAsset & DroppedAssetInterface)[];
+    const asset = assets.find((a) => a.assetId === assetId);
+    if (!asset) {
+      console.warn(`No fetched asset matched ID ${assetId} for uniqueName "${uniqueName}"`);
+      return res.json({ success: false });
+    }
+
+    // remedy links
     for (let link of links) {
-      console.log("link.clickableLink: ", link.clickableLink, " for linkId: ", link.linkId);
+      console.log("link: ", JSON.stringify(link));
       if (link.clickableLink === "") {
         if (link.linkId) {
           // user removing existing link
@@ -49,7 +58,7 @@ export const handleUpdateLink = async (req: Request, res: Response): Promise<Res
           await asset.removeClickableLink({ linkId: link.linkId });
         }
         continue;
-      } 
+      }
       if (link.linkId) {
         // user updating old link
         // pull linkId out so it doesn’t end up passed as linkId instead of existingLinkId
@@ -62,7 +71,7 @@ export const handleUpdateLink = async (req: Request, res: Response): Promise<Res
         // user adding a fresh (new) link
         await asset.updateClickableLinkMulti({
           clickableLink: link.clickableLink,
-          isForceLinkInIframe: false,
+          isForceLinkInIframe: true,
           isOpenLinkInDrawer: false,
         });
       }

@@ -70,7 +70,11 @@ export const SearchResult = ({
       </div>
 
       <div className="card-details">
-        <h4 className="card-title">{assetName}</h4>
+        <h4 className="card-title" style={{
+            whiteSpace: "normal",
+            wordBreak: "break-word",
+            overflowWrap: "break-word",
+	        }}>{assetName}</h4>
         <p className="card-description p2">{uniqueName}</p>
 
         <div className="card-actions">

@@ -22,6 +22,7 @@ export const ContentCard = ({
   bottomLayerURL,
   position,
   links,
+  assetName,
 }: ContentCardProps) => {
   const imageURL = topLayerURL || bottomLayerURL || "";
   const dispatch = useContext(GlobalDispatchContext);
@@ -30,8 +31,9 @@ export const ContentCard = ({
   for (let link of links) {
     if (link) usableLinks.push(link);
   }
-  const linkStrings = links.map((ln) => ln.clickableLink);
-  const linksText = linkStrings.join(", ");
+  const linksLength = usableLinks.length;
+  // const linkStrings = links.map((ln) => ln.clickableLink);
+  // const linksText = linkStrings.join(", ");
 
   const [showLinkModal, setShowLinkModal] = useState(false);
 
@@ -60,8 +62,9 @@ export const ContentCard = ({
             whiteSpace: "normal",
             wordBreak: "break-word",
             overflowWrap: "break-word",
-	        }}>{uniqueName}</h4>
-          <p className="card-description p2">{linksText}</p>
+	        }}>{assetName}</h4>
+          <p className="p2"> {uniqueName}</p>
+          <p className="card-description p2" >{linksLength} {linksLength === 1 ? 'link' : 'links'} attached </p>
 
           <div className="card-actions">
             {visitor?.isAdmin && (

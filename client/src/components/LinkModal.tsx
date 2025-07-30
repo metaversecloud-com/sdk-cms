@@ -15,9 +15,9 @@ export const LinkModal = ({
   const dispatch = useContext(GlobalDispatchContext)!;
   const { contentMap = {} } = useContext(GlobalStateContext);
 
-  // max 5 links
+  // max 20 links
   const [links, setLinks] = useState<ClickableLinkInfo[]>(() => {
-    const head = currentLinks.slice(0, 5);
+    const head = currentLinks.slice(0, 20);
     return head.length > 0
       ? head
       : [
@@ -30,6 +30,7 @@ export const LinkModal = ({
           },
         ];
   });
+  const [editingRows, setEditingRows] = useState<Set<number>>(new Set());
 
   const [loading, setLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
@@ -82,7 +83,7 @@ export const LinkModal = ({
   };
 
   const addField = () => {
-    if (links.length < 5) {
+    if (links.length < 20) {
       setLinks([
         ...links,
         {
@@ -98,6 +99,7 @@ export const LinkModal = ({
 
   // ui only action
   const onLinkDelete = (index: number) => {
+    setEditingRows((prev) => new Set(prev).add(index));
     setLinks((prev) => prev.map((ln, i) => (i === index ? { ...ln, clickableLink: "" } : ln)));
   };
 
@@ -106,29 +108,79 @@ export const LinkModal = ({
       <div className="modal">
         <h4>Update Asset Links</h4>
 
-        {links.map((ln, i) => (
-          <div key={i} className="mb-4 flex items-center">
-            <input
-              type="text"
-              className="input flex-grow"
-              value={ln.clickableLink}
-              onChange={(e) => {
-                const copy = [...links];
-                copy[i] = { ...copy[i], clickableLink: e.target.value };
-                setLinks(copy);
-              }}
-              placeholder="https://example.com"
-            />
-            <button className=" ml-2 p-2" onClick={() => onLinkDelete(i)} disabled={disabled || loading}>
-              <img src="https://sdk-style.s3.amazonaws.com/icons/delete.svg" width={20} height={20} />
-            </button>
-          </div>
-        ))}
+        <div className="max-h-64 overflow-y-auto space-y-4 mb-4">
+          {links.map((ln, i) => {
+            const isEditing = editingRows.has(i) || !ln.linkId;
 
-        {links.length < 5 && (
+            return (
+              <div key={i} className="mb-6 grid grid-cols-[1fr_auto] gap-x-2">
+                <div className="flex flex-col space-y-2">
+                  {!isEditing ? (
+                    // DISPLAY MODE: show a real clickable link
+                    <a
+                      href={ln.clickableLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="input p1 underline break-words"
+                      style={{ textAlign: "left", maxWidth: "225px", overflow: "hidden" }}
+                    >
+                      {ln.clickableLink}
+                    </a>
+                  ) : (
+                    // EDIT MODE: show the URL input
+                    <input
+                      type="text"
+                      className="input w-full"
+                      value={ln.clickableLink}
+                      onChange={(e) => {
+                        const copy = [...links];
+                        copy[i] = { ...copy[i], clickableLink: e.target.value };
+                        setLinks(copy);
+                      }}
+                      placeholder="https://example.com"
+                    />
+                  )}
+
+                  {/* dropdown menu */}
+                  <select
+                    className="input w-full"
+                    value={ln.isOpenLinkInDrawer ? "drawer" : ln.isForceLinkInIframe ? "modal" : "newTab"}
+                    onChange={(e) => {
+                      const mode = e.target.value;
+                      const copy = [...links];
+                      copy[i] = {
+                        ...copy[i],
+                        isOpenLinkInDrawer: mode === "drawer",
+                        isForceLinkInIframe: mode === "modal",
+                      };
+                      setLinks(copy);
+                    }}
+                    style={{ maxWidth: "225px", overflow: "hidden" }}
+                  >
+                    <option value="drawer">Drawer</option>
+                    <option value="modal">Modal</option>
+                    <option value="newTab">New Tab</option>
+                  </select>
+                </div>
+
+                {/* Right column: delete button, vertically centered */}
+                <button className="p-2" onClick={() => onLinkDelete(i)} disabled={disabled || loading}>
+                  <img
+                    src="https://sdk-style.s3.amazonaws.com/icons/delete.svg"
+                    width={20}
+                    height={20}
+                    alt="Delete link"
+                  />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        {links.length < 20 && (
           <div className="mb-4 flex justify-center">
             <button className="btn btn-icon" onClick={addField} disabled={disabled || loading}>
-              <img src="https://sdk-style.s3.amazonaws.com/icons/chevronDown.svg" width={20} height={20} />
+              <img src="https://sdk-style.s3.amazonaws.com/icons/plus.svg" width={20} height={20} />
             </button>
           </div>
         )}

@@ -69,9 +69,17 @@ export const AdminView = () => {
     <>
       <SearchBar value={searchTerm} onChange={setSearchTerm} onSearch={onSearch} />
 
-      {/* search results */}
-      {assets.length > 0 ? (
-        <ul className="rtsdk-results-list">
+      {searchTerm === "" ? (
+        <div className="space-y-2">
+          <h5>Add a New Asset to the Content Manager</h5>
+          <p className="p2">Search by the asset’s unique name to get started.</p>
+          <p className="p2">
+            Once added, the asset will appear on the main page, where you can attach and edit linked content anytime.
+          </p>
+        </div>
+      ) : assets.length > 0 ? (
+        /* they typed something and we have matches */
+        <ul className="rtsdk-results-list space-y-2" >
           {assets.map((asset) => (
             <SearchResult key={asset.assetId} {...asset} isAdded={isAdded(asset.assetId)} />
           ))}

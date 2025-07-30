@@ -23,8 +23,15 @@ export const handleGetList = async (req: Request, res: Response): Promise<Respon
           uniqueName: uName,
           isPartial: false,
         })) as DroppedAssetInterface[];
+
+        // find matchign assetId asset returned
+        const match = assets.find(a => a.assetId === assetId);
+        if (!match) {
+          console.warn(`No fetched asset matched ID ${assetId}`);
+          continue;
+        }
         // @TODO fix error suppressor in line below once clickableLinks is added to DroppedAssetInterface
-        const { topLayerURL, bottomLayerURL, clickableLinks } = assets[0] as any;
+        const { topLayerURL, bottomLayerURL, clickableLinks } = match as any;
         refreshedDroppedAssets[assetId] = {
           ...droppedAssets[assetId],
           topLayerURL: topLayerURL ?? droppedAssets[assetId].topLayerURL,

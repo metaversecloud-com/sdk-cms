@@ -43,7 +43,11 @@ export const Home = () => {
   }, [hasInteractiveParams, dispatch]);
 
   return (
-    <PageContainer isLoading={isLoading} headerText="Content" adminHeaderText="Search">
+    <PageContainer isLoading={isLoading} headerText="Featured Content" adminHeaderText="Search">
+      <div className="p2" style={{ marginBottom: "1rem" }}>
+        View latest content linked in this world. Admins can update links and manage assets directly from this page to
+        keep content current for your community.
+      </div>
       <ContentList />
     </PageContainer>
   );
