@@ -50,11 +50,9 @@ export const handleUpdateLink = async (req: Request, res: Response): Promise<Res
 
     // remedy links
     for (let link of links) {
-      console.log("link: ", JSON.stringify(link));
       if (link.clickableLink === "") {
         if (link.linkId) {
           // user removing existing link
-          console.log("removing link ", link.clickableLink);
           await asset.removeClickableLink({ linkId: link.linkId });
         }
         continue;

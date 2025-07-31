@@ -1,7 +1,17 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import { backendAPI, setErrorMessage } from "@/utils";
 import { GlobalDispatchContext, GlobalStateContext } from "@/context/GlobalContext";
 import type { ClickableLinkInfo } from "@/context/types";
+
+// tooltip component
+import Tippy from "@tippyjs/react";
+import "tippy.js/dist/tippy.css";
+
+interface LinkPreview {
+  title?: string;
+  description?: string;
+  image?: string | null;
+}
 
 export const LinkModal = ({
   assetId,
@@ -16,8 +26,9 @@ export const LinkModal = ({
   const { contentMap = {} } = useContext(GlobalStateContext);
 
   // max 20 links
+  const maxLinks = 20;
   const [links, setLinks] = useState<ClickableLinkInfo[]>(() => {
-    const head = currentLinks.slice(0, 20);
+    const head = currentLinks.slice(0, maxLinks);
     return head.length > 0
       ? head
       : [
@@ -34,25 +45,50 @@ export const LinkModal = ({
 
   const [loading, setLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [previews, setPreviews] = useState<(LinkPreview | null)[]>(Array(maxLinks).fill(null));
+
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // make sure link is ok
   const isValid = links.every((ln) => {
     const s = ln.clickableLink.trim();
     if (s === "") return true; // allow empty bc treated as deletion
-
     // http:// or https://
     const m = s.match(/^(https?):\/\/([^\/]+)(\/.*)?$/i);
     if (!m) return false;
 
     const host = m[2];
     if (host.endsWith(".")) return false;
-
     const parts = host.split(".");
     if (parts.length === 1) {
       return /^[A-Za-z][A-Za-z0-9-]*$/.test(parts[0]);
     }
     return parts.every((seg) => /^[A-Za-z0-9][A-Za-z0-9-]*$/.test(seg));
   });
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const resp = await backendAPI.put<{
+          previews: { clickableLink: string; preview: LinkPreview | null }[];
+        }>("/preview-links", { links });
+        const fetched = resp.data.previews;
+
+        // build fixed-length array
+        const newPreviews: (LinkPreview | null)[] = Array(maxLinks)
+          .fill(null)
+          .map((_, i) => {
+            return i < fetched.length ? fetched[i].preview : null;
+          });
+
+        setPreviews(newPreviews);
+      } catch (err: any) {
+        console.error("Failed to load link previews", err);
+        // we won’t block the UI—just leave previews as null
+      }
+    })();
+  }, []);
 
   const onUpdate = async () => {
     if (!isValid) return;
@@ -83,7 +119,7 @@ export const LinkModal = ({
   };
 
   const addField = () => {
-    if (links.length < 20) {
+    if (links.length < maxLinks) {
       setLinks([
         ...links,
         {
@@ -105,29 +141,76 @@ export const LinkModal = ({
 
   return (
     <div className="modal-container">
-      <div className="modal">
+      <div className="modal" style={{overflow: "visible"}}>
         <h4>Update Asset Links</h4>
 
-        <div className="max-h-64 overflow-y-auto space-y-4 mb-4">
+        <div className="max-h-64 overflow-y-auto space-y-4 mb-4" ref={scrollRef}>
           {links.map((ln, i) => {
             const isEditing = editingRows.has(i) || !ln.linkId;
+            const preview = previews[i];
 
             return (
-              <div key={i} className="mb-6 grid grid-cols-[1fr_auto] gap-x-2">
+              <div
+                key={i}
+                className="mb-6 grid grid-cols-[1fr_auto] gap-x-2"
+              >
                 <div className="flex flex-col space-y-2">
                   {!isEditing ? (
-                    // DISPLAY MODE: show a real clickable link
-                    <a
-                      href={ln.clickableLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="input p1 underline break-words"
-                      style={{ textAlign: "left", maxWidth: "225px", overflow: "hidden" }}
+
+                    <Tippy
+                      content={
+                        preview ? (
+                          <div
+                            className="bg-white border rounded shadow p-2"
+                            style={{ width: 200 }}
+                          >
+                            {preview.image && (
+                              <img
+                                src={preview.image}
+                                alt=""
+                                className="w-full h-32 object-cover rounded"
+                              />
+                            )}
+                            {preview.title && (
+                              <h5 className="mt-1 font-semibold text-sm">
+                                {preview.title}
+                              </h5>
+                            )}
+                            {preview.description && (
+                              <p className="text-xs text-gray-600">
+                                {preview.description}
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          // ← Placeholder when no preview data
+                          <div
+                            className="bg-white border rounded shadow p-2 text-center text-sm text-gray-500"
+                            style={{ width: 200 }}
+                          >
+                            No preview available
+                          </div>
+                        )
+                      }
+                      placement="bottom-start"
+                      offset={[0, 8]}
+                      interactive={false}
+                      delay={[100, 50]}
+                      appendTo={() => scrollRef.current!}
                     >
-                      {ln.clickableLink}
-                    </a>
+                      <a
+                        href={ln.clickableLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="input p1 underline break-words"
+                        style={{ textAlign: "left", width: "215px", minWidth: "215px", overflow: "hidden" }}
+                      >
+                        {ln.clickableLink}
+                      </a>
+                    </Tippy>
+
                   ) : (
-                    // EDIT MODE: show the URL input
+                    /* edit mode input */
                     <input
                       type="text"
                       className="input w-full"
@@ -143,7 +226,7 @@ export const LinkModal = ({
 
                   {/* dropdown menu */}
                   <select
-                    className="input w-full"
+                    className="input"
                     value={ln.isOpenLinkInDrawer ? "drawer" : ln.isForceLinkInIframe ? "modal" : "newTab"}
                     onChange={(e) => {
                       const mode = e.target.value;
@@ -155,7 +238,7 @@ export const LinkModal = ({
                       };
                       setLinks(copy);
                     }}
-                    style={{ maxWidth: "225px", overflow: "hidden" }}
+                    style={{ width: "215px", minWidth: "215px" }}
                   >
                     <option value="drawer">Drawer</option>
                     <option value="modal">Modal</option>
@@ -163,24 +246,19 @@ export const LinkModal = ({
                   </select>
                 </div>
 
-                {/* Right column: delete button, vertically centered */}
+                {/* delete button */}
                 <button className="p-2" onClick={() => onLinkDelete(i)} disabled={disabled || loading}>
-                  <img
-                    src="https://sdk-style.s3.amazonaws.com/icons/delete.svg"
-                    width={20}
-                    height={20}
-                    alt="Delete link"
-                  />
+                  <img src="https://sdk-style.s3.amazonaws.com/icons/delete.svg" />
                 </button>
               </div>
             );
           })}
         </div>
 
-        {links.length < 20 && (
+        {links.length < maxLinks && (
           <div className="mb-4 flex justify-center">
             <button className="btn btn-icon" onClick={addField} disabled={disabled || loading}>
-              <img src="https://sdk-style.s3.amazonaws.com/icons/plus.svg" width={20} height={20} />
+              <img src="https://sdk-style.s3.amazonaws.com/icons/add.svg" />
             </button>
           </div>
         )}

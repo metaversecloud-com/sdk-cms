@@ -13,8 +13,11 @@
   },
   "dependencies": {
     "@rtsdk/topia": "^0.17.0",
+    "@tippyjs/react": "^4.2.6",
     "axios": "^1.6.8",
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "link-preview-js": "^3.1.0",
+    "tippy.js": "^6.3.7"
   },
   "license": "BSD-3-Clause",
   "devDependencies": {

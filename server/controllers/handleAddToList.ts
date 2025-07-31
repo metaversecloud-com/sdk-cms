@@ -24,10 +24,6 @@ export const handleAddToList = async (req: Request, res: Response): Promise<Resp
       { lock: { lockId, releaseLock: true } },
     );
 
-    await world.fetchDataObject();
-    const newDataObject = (world.dataObject as any) || {};
-    console.log("updated world data object: ", newDataObject);
-
     return res.json({ assetId, success: true });
   } catch (error) {
     return errorHandler({

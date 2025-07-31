@@ -8,3 +8,4 @@ export * from "./handleGetList.js";
 export * from "./handleTeleport.js";
 export * from "./handleUpdateLink.js";
 export * from "./handleResetList.js";
+export * from "./handlePreviewLinks.js";

@@ -10,6 +10,7 @@ import {
   handleResetList,
   handleTeleport,
   handleFireToast,
+  handlePreviewLinks,
 } from "./controllers/index.js";
 import { getVersion } from "./utils/getVersion.js";
 
@@ -41,6 +42,7 @@ router.get("/content-list", handleGetList);
 router.put("/teleport", handleTeleport);
 router.put("/update-link", handleUpdateLink);
 router.put("/reset-list", handleResetList);
+router.put("/preview-links", handlePreviewLinks);
 router.post("/add-to-list", handleAddToList);
 router.post("/dropped-asset", handleDropAsset);
 router.post("/remove-dropped-assets", handleRemoveDroppedAssetsByUniqueName);
