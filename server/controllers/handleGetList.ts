@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { World, errorHandler, getCredentials } from "../utils/index.js";
+import { World, errorHandler, getCredentials, DroppedAsset } from "../utils/index.js";
 import { DroppedAssetInterface } from "@rtsdk/topia";
 
 export const handleGetList = async (req: Request, res: Response): Promise<Response> => {
@@ -25,7 +25,7 @@ export const handleGetList = async (req: Request, res: Response): Promise<Respon
         })) as DroppedAssetInterface[];
 
         // find matchign assetId asset returned
-        const match = assets.find(a => a.assetId === assetId);
+        const match = assets.find((a) => a.assetId === assetId);
         if (!match) {
           console.warn(`No fetched asset matched ID ${assetId}`);
           continue;

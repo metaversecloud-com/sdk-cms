@@ -12,11 +12,6 @@ export const handleAssetSearch = async (req: Request, res: Response): Promise<Re
     const world = World.create(urlSlug, { credentials });
 
     await world.fetchDataObject();
-    const dataObject = (world.dataObject as any) || {};
-    const currentDroppedAssets: Record<string, any> =
-      typeof dataObject.droppedAssets === "object" && dataObject.droppedAssets !== null
-        ? { ...dataObject.droppedAssets }
-        : {};
     const search = (req.query.search as string) || "";
 
     if (search == "") {

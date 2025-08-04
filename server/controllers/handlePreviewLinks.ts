@@ -41,7 +41,6 @@ export const handlePreviewLinks = async (req: Request, res: Response): Promise<R
             },
           };
         } catch (err) {
-          console.warn(`Preview failed for ${clickableLink}:`, err);
           return { clickableLink, preview: null };
         }
       }),

@@ -5,12 +5,11 @@ import { World, Visitor, errorHandler, getCredentials } from "../utils/index.js"
 export const handleTeleport = async (req: Request, res: Response): Promise<Response> => {
   try {
     const credentials = getCredentials(req.query);
-    const { profileId, interactiveNonce, interactivePublicKey, urlSlug, visitorId } = credentials;
+    const { interactiveNonce, interactivePublicKey, urlSlug, visitorId } = credentials;
 
-    const world = World.create(credentials.urlSlug, { credentials });
     const visitor = Visitor.create(visitorId, urlSlug, { credentials: { interactiveNonce, interactivePublicKey, assetId: credentials.assetId, urlSlug, visitorId } });
 
-    const { assetId, position } = req.body as {
+    const { position } = req.body as {
       assetId: string;
       position: { x: number; y: number };
     };

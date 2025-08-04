@@ -1,15 +1,12 @@
 import express from "express";
 import {
-  handleDropAsset,
   handleGetGameState,
-  handleRemoveDroppedAssetsByUniqueName,
   handleAssetSearch,
   handleAddToList,
   handleGetList,
   handleUpdateLink,
   handleResetList,
   handleTeleport,
-  handleFireToast,
   handlePreviewLinks,
 } from "./controllers/index.js";
 import { getVersion } from "./utils/getVersion.js";
@@ -44,10 +41,5 @@ router.put("/update-link", handleUpdateLink);
 router.put("/reset-list", handleResetList);
 router.put("/preview-links", handlePreviewLinks);
 router.post("/add-to-list", handleAddToList);
-router.post("/dropped-asset", handleDropAsset);
-router.post("/remove-dropped-assets", handleRemoveDroppedAssetsByUniqueName);
-
-// World
-router.put("/world/fire-toast", handleFireToast);
 
 export default router;

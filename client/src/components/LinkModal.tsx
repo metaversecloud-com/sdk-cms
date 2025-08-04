@@ -45,7 +45,6 @@ export const LinkModal = ({
 
   const [loading, setLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [previews, setPreviews] = useState<(LinkPreview | null)[]>(Array(maxLinks).fill(null));
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -141,7 +140,7 @@ export const LinkModal = ({
 
   return (
     <div className="modal-container">
-      <div className="modal" style={{overflow: "visible"}}>
+      <div className="modal" style={{ overflow: "visible" }}>
         <h4>Update Asset Links</h4>
 
         <div className="max-h-64 overflow-y-auto space-y-4 mb-4" ref={scrollRef}>
@@ -150,40 +149,22 @@ export const LinkModal = ({
             const preview = previews[i];
 
             return (
-              <div
-                key={i}
-                className="mb-6 grid grid-cols-[1fr_auto] gap-x-2"
-              >
+              <div key={i} className="mb-6 grid grid-cols-[1fr_auto] gap-x-2">
                 <div className="flex flex-col space-y-2">
                   {!isEditing ? (
-
+                    // Imported library for tooltips vv
                     <Tippy
                       content={
                         preview ? (
-                          <div
-                            className="bg-white border rounded shadow p-2"
-                            style={{ width: 200 }}
-                          >
+                          <div className="bg-white border rounded shadow p-2" style={{ width: 200 }}>
                             {preview.image && (
-                              <img
-                                src={preview.image}
-                                alt=""
-                                className="w-full h-32 object-cover rounded"
-                              />
+                              <img src={preview.image} alt="" className="w-full h-32 object-cover rounded" />
                             )}
-                            {preview.title && (
-                              <h5 className="mt-1 font-semibold text-sm">
-                                {preview.title}
-                              </h5>
-                            )}
-                            {preview.description && (
-                              <p className="text-xs text-gray-600">
-                                {preview.description}
-                              </p>
-                            )}
+                            {preview.title && <h5 className="mt-1 font-semibold text-sm">{preview.title}</h5>}
+                            {preview.description && <p className="text-xs text-gray-600">{preview.description}</p>}
                           </div>
                         ) : (
-                          // ← Placeholder when no preview data
+                          // NO PREVIEW DATA
                           <div
                             className="bg-white border rounded shadow p-2 text-center text-sm text-gray-500"
                             style={{ width: 200 }}
@@ -208,9 +189,8 @@ export const LinkModal = ({
                         {ln.clickableLink}
                       </a>
                     </Tippy>
-
                   ) : (
-                    /* edit mode input */
+                    // edit mode input
                     <input
                       type="text"
                       className="input w-full"
