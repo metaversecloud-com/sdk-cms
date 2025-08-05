@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { World, errorHandler, getCredentials } from "../utils/index.js";
+import { World, errorHandler, getCredentials, getDroppedAsset } from "../utils/index.js";
 
-import type { DroppedAssetInterface, DroppedAsset, DroppedAssetLinkType } from "@rtsdk/topia";
+import type { DroppedAssetInterface, DroppedAsset } from "@rtsdk/topia";
 
 export interface ClickableLinkInfo {
   clickableLink: string;
@@ -14,12 +14,13 @@ export interface ClickableLinkInfo {
 export const handleUpdateLink = async (req: Request, res: Response): Promise<Response> => {
   try {
     const credentials = getCredentials(req.query);
+    const { profileId, urlSlug } = credentials;
     const { assetId, links } = req.body as {
       assetId: string;
       links: ClickableLinkInfo[];
     };
 
-    const world = World.create(credentials.urlSlug, { credentials });
+    const world = World.create(urlSlug, { credentials });
     await world.fetchDataObject();
     const dataObject = (world.dataObject as any) || {};
     const currentDroppedAssets: Record<string, any> =
@@ -80,6 +81,23 @@ export const handleUpdateLink = async (req: Request, res: Response): Promise<Res
       isPartial: false,
     })) as DroppedAssetInterface[];
     const newLinks = (newAssets[0] as any).clickableLinks;
+
+    // Update analytics
+    const droppedAsset = await getDroppedAsset(credentials);
+
+    await droppedAsset.updateDataObject(
+      {},
+      {
+        analytics: [
+          {
+            analyticName: "link_updates",
+            profileId,
+            urlSlug,
+            uniqueKey: profileId,
+          },
+        ],
+      },
+    );
 
     return res.json({ newLinks, success: true });
   } catch (error) {

@@ -32,8 +32,6 @@ export const ContentCard = ({
     if (link) usableLinks.push(link);
   }
   const linksLength = usableLinks.length;
-  // const linkStrings = links.map((ln) => ln.clickableLink);
-  // const linksText = linkStrings.join(", ");
 
   const [showLinkModal, setShowLinkModal] = useState(false);
 

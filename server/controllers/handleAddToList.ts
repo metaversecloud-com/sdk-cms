@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
-import { World, errorHandler, getCredentials } from "../utils/index.js";
+import { World, errorHandler, getCredentials, getDroppedAsset } from "../utils/index.js";
 
 export const handleAddToList = async (req: Request, res: Response): Promise<Response> => {
   try {
     const credentials = getCredentials(req.query);
-    const { profileId } = credentials;
+    const { profileId, urlSlug } = credentials;
     const { uniqueName, topLayerURL, bottomLayerURL, assetId, position, links, assetName } = req.body;
 
-    const world = World.create(credentials.urlSlug, { credentials });
+    const world = World.create(urlSlug, { credentials });
     await world.fetchDataObject();
     const dataObject = (world.dataObject as any) || {};
     const currentDroppedAssets: Record<string, any> =
@@ -22,6 +22,23 @@ export const handleAddToList = async (req: Request, res: Response): Promise<Resp
     await world.updateDataObject(
       { ...dataObject, droppedAssets: currentDroppedAssets },
       { lock: { lockId, releaseLock: true } },
+    );
+
+    // Update analytics
+    const droppedAsset = await getDroppedAsset(credentials);
+
+    await droppedAsset.updateDataObject(
+      {},
+      {
+        analytics: [
+          {
+            analyticName: "content_list_adds",
+            profileId,
+            urlSlug,
+            uniqueKey: profileId,
+          },
+        ],
+      },
     );
 
     return res.json({ assetId, success: true });

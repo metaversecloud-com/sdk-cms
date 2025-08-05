@@ -1,13 +1,14 @@
 import { Request, Response } from "express";
-import { World, Visitor, errorHandler, getCredentials } from "../utils/index.js";
-
+import { Visitor, errorHandler, getCredentials, getDroppedAsset } from "../utils/index.js";
 
 export const handleTeleport = async (req: Request, res: Response): Promise<Response> => {
   try {
     const credentials = getCredentials(req.query);
-    const { interactiveNonce, interactivePublicKey, urlSlug, visitorId } = credentials;
+    const { profileId, interactiveNonce, interactivePublicKey, urlSlug, visitorId } = credentials;
 
-    const visitor = Visitor.create(visitorId, urlSlug, { credentials: { interactiveNonce, interactivePublicKey, assetId: credentials.assetId, urlSlug, visitorId } });
+    const visitor = Visitor.create(visitorId, urlSlug, {
+      credentials: { interactiveNonce, interactivePublicKey, assetId: credentials.assetId, urlSlug, visitorId },
+    });
 
     const { position } = req.body as {
       assetId: string;
@@ -23,6 +24,23 @@ export const handleTeleport = async (req: Request, res: Response): Promise<Respo
       x: position.x,
       y: position.y,
     });
+
+    // Update analytics
+    const droppedAsset = await getDroppedAsset(credentials);
+
+    await droppedAsset.updateDataObject(
+      {},
+      {
+        analytics: [
+          {
+            analyticName: "teleports",
+            profileId,
+            urlSlug,
+            uniqueKey: profileId,
+          },
+        ],
+      },
+    );
 
     return res.json({ success: true });
   } catch (error) {
