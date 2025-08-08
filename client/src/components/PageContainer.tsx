@@ -17,7 +17,7 @@ export const PageContainer = ({
   headerText?: string;
   adminHeaderText?: string;
 }) => {
-  const { error, visitor } = useContext(GlobalStateContext);
+  const { error, isAdmin } = useContext(GlobalStateContext);
   const [showSettings, setShowSettings] = useState(false);
 
   if (isLoading) return <Loading />;
@@ -26,7 +26,7 @@ export const PageContainer = ({
 
   return (
     <div className="p-4 mb-28">
-      {visitor?.isAdmin && (
+      {isAdmin && (
         <div>
           <AdminIconButton setShowSettings={() => setShowSettings(!showSettings)} showSettings={showSettings} />
         </div>

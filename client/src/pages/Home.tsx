@@ -7,7 +7,7 @@ import { PageContainer, ContentList } from "@/components";
 import { GlobalDispatchContext, GlobalStateContext } from "@/context/GlobalContext";
 
 // utils
-import { backendAPI, setErrorMessage, setGameState } from "@/utils";
+import { backendAPI, setErrorMessage } from "@/utils";
 
 import { AssetInfo } from "@/context/types";
 
@@ -20,9 +20,9 @@ export const Home = () => {
   useEffect(() => {
     if (hasInteractiveParams) {
       backendAPI
-        .get("/game-state")
+        .get("/visitor")
         .then((response) => {
-          setGameState(dispatch, response.data);
+          dispatch({ type: "SET_IS_ADMIN", payload: { isAdmin: response.data.isAdmin } });
 
           // setLoadingContentList(true);
           return backendAPI.get("/content-list");

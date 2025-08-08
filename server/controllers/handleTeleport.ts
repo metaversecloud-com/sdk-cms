@@ -1,17 +1,15 @@
 import { Request, Response } from "express";
-import { Visitor, errorHandler, getCredentials, getDroppedAsset } from "../utils/index.js";
+import { Visitor, errorHandler, getCredentials } from "../utils/index.js";
 
 export const handleTeleport = async (req: Request, res: Response): Promise<Response> => {
   try {
     const credentials = getCredentials(req.query);
-    const { profileId, interactiveNonce, interactivePublicKey, urlSlug, visitorId } = credentials;
+    const { profileId, urlSlug, visitorId } = credentials;
 
-    const visitor = Visitor.create(visitorId, urlSlug, {
-      credentials: { interactiveNonce, interactivePublicKey, assetId: credentials.assetId, urlSlug, visitorId },
-    });
+    const visitor = Visitor.create(visitorId, urlSlug, { credentials });
 
     const { position } = req.body as {
-      assetId: string;
+      id: string;
       position: { x: number; y: number };
     };
 
@@ -25,10 +23,7 @@ export const handleTeleport = async (req: Request, res: Response): Promise<Respo
       y: position.y,
     });
 
-    // Update analytics
-    const droppedAsset = await getDroppedAsset(credentials);
-
-    await droppedAsset.updateDataObject(
+    await visitor.updateDataObject(
       {},
       {
         analytics: [

@@ -1,6 +1,5 @@
 import express from "express";
 import {
-  handleGetGameState,
   handleAssetSearch,
   handleAddToList,
   handleGetList,
@@ -8,6 +7,7 @@ import {
   handleResetList,
   handleTeleport,
   handlePreviewLinks,
+  handleGetVisitor,
 } from "./controllers/index.js";
 import { getVersion } from "./utils/getVersion.js";
 
@@ -33,7 +33,7 @@ router.get("/system/health", (req, res) => {
 });
 
 // Dropped Assets
-router.get("/game-state", handleGetGameState);
+router.get("/visitor", handleGetVisitor);
 router.get("/asset-search", handleAssetSearch);
 router.get("/content-list", handleGetList);
 router.put("/teleport", handleTeleport);

@@ -19,10 +19,10 @@ export const ContentList = () => {
 
   return (
     <div className="card-grid space-y-2">
-      {entries.map(([assetId, info]) => (
+      {entries.map(([id, info]) => (
         <ContentCard
-          key={assetId}
-          assetId={assetId}
+          key={id}
+          id={id}
           uniqueName={info.uniqueName}
           topLayerURL={info.topLayerURL}
           bottomLayerURL={info.bottomLayerURL}

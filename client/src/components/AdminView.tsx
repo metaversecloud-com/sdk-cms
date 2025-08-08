@@ -10,12 +10,12 @@ import { GlobalDispatchContext, GlobalStateContext } from "@/context/GlobalConte
 import { backendAPI, setErrorMessage } from "@/utils";
 
 // types
-import { AssetInfo } from "@/context/types";
+import { AssetInfo, ErrorType } from "@/context/types";
 
 export const AdminView = () => {
   const dispatch = useContext(GlobalDispatchContext)!;
   const { contentMap = {} } = useContext(GlobalStateContext);
-  const isAdded = (assetId: string) => assetId in contentMap;
+  const isAdded = (id: string) => id in contentMap;
 
   const [searchTerm, setSearchTerm] = useState("");
   const [assets, setAssets] = useState<AssetInfo[]>([]);
@@ -34,8 +34,8 @@ export const AdminView = () => {
       });
 
       if (resp.data.success) {
-        const paredDown: AssetInfo[] = resp.data.assets.map((a: any) => ({
-          assetId: a.assetId,
+        const paredDown: AssetInfo[] = resp.data.assets.map((a: AssetInfo) => ({
+          id: a.id,
           uniqueName: a.uniqueName,
           topLayerURL: a.topLayerURL,
           bottomLayerURL: a.bottomLayerURL,
@@ -47,8 +47,8 @@ export const AdminView = () => {
       } else {
         setAssets([]);
       }
-    } catch (err: any) {
-      setErrorMessage(dispatch, err);
+    } catch (err) {
+      setErrorMessage(dispatch, err as ErrorType);
     }
   };
 
@@ -60,8 +60,8 @@ export const AdminView = () => {
         console.log("Successfully reset the droppedAssets inside the world data object for CMS list");
         dispatch({ type: "SET_CONTENT_MAP", payload: {} });
       }
-    } catch (err: any) {
-      setErrorMessage(dispatch, err);
+    } catch (err) {
+      setErrorMessage(dispatch, err as ErrorType);
     }
   };
 
@@ -79,9 +79,9 @@ export const AdminView = () => {
         </div>
       ) : assets.length > 0 ? (
         /* they typed something and we have matches */
-        <ul className="rtsdk-results-list space-y-2" >
+        <ul className="rtsdk-results-list space-y-2">
           {assets.map((asset) => (
-            <SearchResult key={asset.assetId} {...asset} isAdded={isAdded(asset.assetId)} />
+            <SearchResult key={asset.id} {...asset} isAdded={isAdded(asset.id)} />
           ))}
         </ul>
       ) : (

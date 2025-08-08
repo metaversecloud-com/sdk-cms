@@ -1,4 +1,4 @@
-export * from "./handleGetGameState.js";
+export * from "./handleGetVisitor.js";
 export * from "./handleAssetSearch.js";
 export * from "./handleAddToList.js";
 export * from "./handleGetList.js";

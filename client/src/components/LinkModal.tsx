@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect, useRef } from "react";
 import { backendAPI, setErrorMessage } from "@/utils";
 import { GlobalDispatchContext, GlobalStateContext } from "@/context/GlobalContext";
-import type { ClickableLinkInfo } from "@/context/types";
+import type { ClickableLinkInfo, ErrorType } from "@/context/types";
 
 // tooltip component
 import Tippy from "@tippyjs/react";
@@ -14,11 +14,11 @@ interface LinkPreview {
 }
 
 export const LinkModal = ({
-  assetId,
+  id,
   currentLinks,
   onClose,
 }: {
-  assetId: string;
+  id: string;
   currentLinks: ClickableLinkInfo[];
   onClose: () => void;
 }) => {
@@ -82,8 +82,8 @@ export const LinkModal = ({
           });
 
         setPreviews(newPreviews);
-      } catch (err: any) {
-        console.error("Failed to load link previews", err);
+      } catch (err) {
+        console.error("Failed to load link previews", err as ErrorType);
         // we won’t block the UI—just leave previews as null
       }
     })();
@@ -94,7 +94,7 @@ export const LinkModal = ({
     setLoading(true);
     setDisabled(true);
     try {
-      const resp = await backendAPI.put("/update-link", { assetId, links });
+      const resp = await backendAPI.put("/update-link", { id, links });
       const newLinks: ClickableLinkInfo[] = resp.data.newLinks;
 
       setLinks(newLinks);
@@ -102,15 +102,15 @@ export const LinkModal = ({
       //  correct local context
       const newMap = {
         ...contentMap,
-        [assetId]: {
-          ...contentMap[assetId],
+        [id]: {
+          ...contentMap[id],
           links: newLinks,
         },
       };
       dispatch({ type: "SET_CONTENT_MAP", payload: newMap });
       onClose();
-    } catch (err: any) {
-      setErrorMessage(dispatch, err);
+    } catch (err) {
+      setErrorMessage(dispatch, err as ErrorType);
     } finally {
       setLoading(false);
       setDisabled(false);
@@ -222,7 +222,7 @@ export const LinkModal = ({
                   >
                     <option value="drawer">Drawer</option>
                     <option value="modal">Modal</option>
-                    <option value="newTab">New Tab</option>
+                    <option value="newTab">New Tab</option>
                   </select>
                 </div>
 

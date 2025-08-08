@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { World, errorHandler, getCredentials, getDroppedAsset } from "../utils/index.js";
+import { World, errorHandler, getCredentials } from "../utils/index.js";
 
 export const handleResetList = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -9,12 +9,8 @@ export const handleResetList = async (req: Request, res: Response): Promise<Resp
     const world = World.create(urlSlug, { credentials });
 
     const lockId = `${world.urlSlug}-${new Date(Math.round(new Date().getTime() / 60000) * 60000)}`;
-    await world.updateDataObject({ droppedAssets: {} }, { lock: { lockId, releaseLock: true } });
-
-    // Update analytics
-    const droppedAsset = await getDroppedAsset(credentials);
-    await droppedAsset.updateDataObject(
-      {},
+    await world.updateDataObject(
+      { droppedAssets: {} },
       {
         analytics: [
           {
@@ -24,6 +20,7 @@ export const handleResetList = async (req: Request, res: Response): Promise<Resp
             uniqueKey: profileId,
           },
         ],
+        lock: { lockId, releaseLock: true },
       },
     );
 

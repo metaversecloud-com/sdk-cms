@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import type { AssetInfo } from "@/context/types";
+import type { AssetInfo, ErrorType } from "@/context/types";
 import type { ClickableLinkInfo } from "@/context/types";
 
 // context
@@ -12,11 +12,11 @@ import { backendAPI, setErrorMessage } from "@/utils";
 import LinkModal from "./LinkModal";
 
 interface ContentCardProps extends AssetInfo {
-  assetId: string;
+  id: string;
 }
 
 export const ContentCard = ({
-  assetId,
+  id,
   uniqueName,
   topLayerURL,
   bottomLayerURL,
@@ -26,10 +26,10 @@ export const ContentCard = ({
 }: ContentCardProps) => {
   const imageURL = topLayerURL || bottomLayerURL || "";
   const dispatch = useContext(GlobalDispatchContext);
-  const { visitor } = useContext(GlobalStateContext);
+  const { isAdmin } = useContext(GlobalStateContext);
   const usableLinks: ClickableLinkInfo[] = [];
-  for (let link of links) {
-    if (link) usableLinks.push(link);
+  if (links) {
+    for (const link of links) if (link) usableLinks.push(link);
   }
   const linksLength = usableLinks.length;
 
@@ -37,35 +37,41 @@ export const ContentCard = ({
 
   const onTeleport = async () => {
     try {
-      const resp = await backendAPI.put("/teleport", { assetId, position });
+      const resp = await backendAPI.put("/teleport", { id, position });
 
       if (resp.data.success) {
-        console.log("teleported to ", assetId, " successfully");
+        console.log("teleported to ", id, " successfully");
       }
-    } catch (err: any) {
-      setErrorMessage(dispatch, err);
-    } finally {
+    } catch (err) {
+      setErrorMessage(dispatch, err as ErrorType);
     }
   };
 
   return (
     <>
-      <div className="card small" key={assetId}>
+      <div className="card small" key={id}>
         <div className="card-image" style={{ overflow: "hidden" }}>
           {imageURL && <img src={imageURL} alt={uniqueName} />}
         </div>
 
         <div className="card-details">
-          <h4 className="card-title" 	style={{
-            whiteSpace: "normal",
-            wordBreak: "break-word",
-            overflowWrap: "break-word",
-	        }}>{assetName}</h4>
+          <h4
+            className="card-title"
+            style={{
+              whiteSpace: "normal",
+              wordBreak: "break-word",
+              overflowWrap: "break-word",
+            }}
+          >
+            {assetName}
+          </h4>
           <p className="p2"> {uniqueName}</p>
-          <p className="card-description p2" >{linksLength} {linksLength === 1 ? 'link' : 'links'} attached </p>
+          <p className="card-description p2">
+            {linksLength} {linksLength === 1 ? "link" : "links"} attached{" "}
+          </p>
 
           <div className="card-actions">
-            {visitor?.isAdmin && (
+            {isAdmin && (
               <button className="btn btn-icon" aria-label="Edit" onClick={() => setShowLinkModal(true)}>
                 <img src="https://sdk-style.s3.amazonaws.com/icons/edit.svg" alt="" />
               </button>
@@ -77,9 +83,7 @@ export const ContentCard = ({
         </div>
       </div>
 
-      {showLinkModal && (
-        <LinkModal assetId={assetId} currentLinks={usableLinks} onClose={() => setShowLinkModal(false)} />
-      )}
+      {showLinkModal && <LinkModal id={id} currentLinks={usableLinks} onClose={() => setShowLinkModal(false)} />}
     </>
   );
 };

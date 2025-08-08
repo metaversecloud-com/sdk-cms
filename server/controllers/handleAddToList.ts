@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import { World, errorHandler, getCredentials, getDroppedAsset } from "../utils/index.js";
+import { World, errorHandler, getCredentials } from "../utils/index.js";
 
 export const handleAddToList = async (req: Request, res: Response): Promise<Response> => {
   try {
     const credentials = getCredentials(req.query);
     const { profileId, urlSlug } = credentials;
-    const { uniqueName, topLayerURL, bottomLayerURL, assetId, position, links, assetName } = req.body;
+    const { uniqueName, topLayerURL, bottomLayerURL, id, position, links, assetName } = req.body;
 
     const world = World.create(urlSlug, { credentials });
     await world.fetchDataObject();
@@ -15,20 +15,12 @@ export const handleAddToList = async (req: Request, res: Response): Promise<Resp
         ? { ...dataObject.droppedAssets }
         : {};
 
-    currentDroppedAssets[assetId] = { uniqueName, topLayerURL, bottomLayerURL, position, profileId, links, assetName };
+    currentDroppedAssets[id] = { uniqueName, topLayerURL, bottomLayerURL, position, profileId, links, assetName };
 
     const lockId = `${world.urlSlug}-${new Date(Math.round(new Date().getTime() / 60000) * 60000)}`;
 
     await world.updateDataObject(
       { ...dataObject, droppedAssets: currentDroppedAssets },
-      { lock: { lockId, releaseLock: true } },
-    );
-
-    // Update analytics
-    const droppedAsset = await getDroppedAsset(credentials);
-
-    await droppedAsset.updateDataObject(
-      {},
       {
         analytics: [
           {
@@ -38,10 +30,11 @@ export const handleAddToList = async (req: Request, res: Response): Promise<Resp
             uniqueKey: profileId,
           },
         ],
+        lock: { lockId, releaseLock: true },
       },
     );
 
-    return res.json({ assetId, success: true });
+    return res.json({ id, success: true });
   } catch (error) {
     return errorHandler({
       error,

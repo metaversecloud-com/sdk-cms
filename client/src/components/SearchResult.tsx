@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 
-import { AssetInfo } from "@context/types";
+import { AssetInfo, ErrorType } from "@context/types";
 import { backendAPI, setErrorMessage } from "@utils/index";
 
 import { GlobalDispatchContext, GlobalStateContext } from "@/context/GlobalContext";
@@ -14,7 +14,7 @@ export const SearchResult = ({
   uniqueName,
   topLayerURL,
   bottomLayerURL,
-  assetId,
+  id,
   position,
   links,
   isAdded,
@@ -41,7 +41,7 @@ export const SearchResult = ({
         uniqueName,
         topLayerURL,
         bottomLayerURL,
-        assetId,
+        id,
         position,
         links,
         assetName,
@@ -50,14 +50,14 @@ export const SearchResult = ({
         setAdded(true);
         const newMap = {
           ...contentMap,
-          [assetId]: { uniqueName, topLayerURL, bottomLayerURL, position, links, assetName },
+          [id]: { uniqueName, topLayerURL, bottomLayerURL, position, links, assetName },
         };
         dispatch({ type: "SET_CONTENT_MAP", payload: newMap });
       } else {
         console.warn("Add to list failed:", resp.data);
       }
-    } catch (err: any) {
-      setErrorMessage(dispatch, err);
+    } catch (err) {
+      setErrorMessage(dispatch, err as ErrorType);
     } finally {
       setAdding(false);
     }
@@ -70,11 +70,16 @@ export const SearchResult = ({
       </div>
 
       <div className="card-details">
-        <h4 className="card-title" style={{
+        <h4
+          className="card-title"
+          style={{
             whiteSpace: "normal",
             wordBreak: "break-word",
             overflowWrap: "break-word",
-	        }}>{assetName}</h4>
+          }}
+        >
+          {assetName}
+        </h4>
         <p className="card-description p2">{uniqueName}</p>
 
         <div className="card-actions">
