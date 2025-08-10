@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 
 // components
-import { PageFooter, ConfirmationModal } from "@/components";
+import { SearchBar, SearchResult, PageFooter, ConfirmationModal } from "@/components";
 
 // context
 import { GlobalDispatchContext, GlobalStateContext } from "@/context/GlobalContext";
@@ -9,79 +9,116 @@ import { GlobalDispatchContext, GlobalStateContext } from "@/context/GlobalConte
 // utils
 import { backendAPI, setErrorMessage } from "@/utils";
 
+// types
+import { AssetInfo, ErrorType } from "@/context/types";
+
 export const AdminView = () => {
-  const dispatch = useContext(GlobalDispatchContext);
-  const { droppedAsset } = useContext(GlobalStateContext);
+  const dispatch = useContext(GlobalDispatchContext)!;
+  const { contentMap = {} } = useContext(GlobalStateContext);
+  const isAdded = (id: string) => id in contentMap;
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [assets, setAssets] = useState<AssetInfo[]>([]);
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [areButtonsDisabled, setAreButtonsDisabled] = useState(false);
 
-  const handleToggleShowConfirmationModal = () => {
-    setShowConfirmationModal(!showConfirmationModal);
+  // @TODO: pass areButtonsDisabled into each search result component?
+  const onSearch = async (searchValue?: string) => {
+    const trimmed = (searchValue ?? searchTerm).trim();
+    if (!trimmed) return;
+
+    try {
+      const resp = await backendAPI.get("/asset-search", {
+        params: { search: trimmed },
+      });
+
+      if (resp.data.success) {
+        const paredDown: AssetInfo[] = resp.data.assets.map((a: AssetInfo) => ({
+          id: a.id,
+          uniqueName: a.uniqueName,
+          topLayerURL: a.topLayerURL,
+          bottomLayerURL: a.bottomLayerURL,
+          position: a.position,
+          links: a.clickableLinks,
+          assetName: a.assetName,
+        }));
+        setAssets(paredDown);
+      } else {
+        setAssets([]);
+      }
+    } catch (err) {
+      setErrorMessage(dispatch, err as ErrorType);
+    }
   };
 
-  const handleDropAsset = async () => {
-    setAreButtonsDisabled(true);
+  const handleReset = async () => {
+    try {
+      const resp = await backendAPI.put("/reset-list");
 
-    backendAPI
-      .post("/dropped-asset")
-      .then(() => {
-        backendAPI.put("/world/fire-toast", { title: "Asset successfully dropped!" });
-      })
-      .catch((error) => setErrorMessage(dispatch, error))
-      .finally(() => {
-        setAreButtonsDisabled(false);
-      });
-  };
-
-  const handleRemoveDroppedAssets = async () => {
-    setAreButtonsDisabled(true);
-
-    backendAPI
-      .post("/remove-dropped-assets")
-      .then(() => {
-        backendAPI.put("/world/fire-toast", {
-          title: "Dropped assets successfully removed!",
-          text: "All dropped assets with matching unique name have been removed from this world.",
-        });
-      })
-      .catch((error) => setErrorMessage(dispatch, error))
-      .finally(() => {
-        setAreButtonsDisabled(false);
-      });
+      if (resp.data.success) {
+        console.log("Successfully reset the droppedAssets inside the world data object for CMS list");
+        dispatch({ type: "SET_CONTENT_MAP", payload: {} });
+      }
+    } catch (err) {
+      setErrorMessage(dispatch, err as ErrorType);
+    }
   };
 
   return (
-    <div style={{ position: "relative" }}>
-      {droppedAsset && (
-        <img
-          className="w-96 h-96 object-cover rounded-2xl my-4"
-          alt="preview"
-          src={droppedAsset.topLayerURL || droppedAsset.bottomLayerURL}
-        />
+    <>
+      <SearchBar value={searchTerm} onChange={setSearchTerm} onSearch={onSearch} />
+
+      {searchTerm === "" ? (
+        <div className="space-y-2">
+          <h5>Add a New Asset to the Content Manager</h5>
+          <p className="p2">Search by the asset’s unique name to get started.</p>
+          <p className="p2">
+            Once added, the asset will appear on the main page, where you can attach and edit linked content anytime.
+          </p>
+        </div>
+      ) : assets.length > 0 ? (
+        /* they typed something and we have matches */
+        <ul className="rtsdk-results-list space-y-2">
+          {assets.map((asset) => (
+            <SearchResult key={asset.id} {...asset} isAdded={isAdded(asset.id)} />
+          ))}
+        </ul>
+      ) : (
+        <div className="text-center">
+          <h4>No results found</h4>
+          <div className="space-y-5">
+            <p className="p1">There are no assets in the world with a matching unique name</p>
+            <p className="p1">
+              Find out how to add a unique name to an asset{" "}
+              <a
+                href="https://www.notion.so/Giving-Unique-Names-239a1cfb811f80a295dcef175e060aca?source=copy_link"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 underline hover:text-blue-700"
+              >
+                here
+              </a>
+            </p>
+          </div>
+        </div>
       )}
+
       <PageFooter>
-        <button className="btn mt-2" disabled={areButtonsDisabled} onClick={handleDropAsset}>
-          Drop Asset
-        </button>
-        <button
-          className="btn btn-danger mt-2"
-          disabled={areButtonsDisabled}
-          onClick={() => handleToggleShowConfirmationModal()}
-        >
-          Remove Dropped Assets
+        <button className="btn btn-danger" onClick={() => setShowConfirmationModal(true)} disabled={areButtonsDisabled}>
+          Reset Content List
         </button>
       </PageFooter>
 
       {showConfirmationModal && (
         <ConfirmationModal
-          title="Remove Dropped Assets"
-          message="Are you sure you want to remove all dropped assets? This action cannot be undone."
-          handleOnConfirm={handleRemoveDroppedAssets}
-          handleToggleShowConfirmationModal={handleToggleShowConfirmationModal}
+          title="Reset content list?"
+          message="This will clear the current content list for this world. Are you sure?"
+          handleOnConfirm={handleReset}
+          handleToggleShowConfirmationModal={() => setShowConfirmationModal((s) => !s)}
         />
       )}
-    </div>
+    </>
   );
 };
 

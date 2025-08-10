@@ -2,9 +2,10 @@ import {
   ActionType,
   InitialState,
   SET_ERROR,
-  SET_GAME_STATE,
   SET_HAS_SETUP_BACKEND,
   SET_INTERACTIVE_PARAMS,
+  SET_CONTENT_MAP,
+  SET_IS_ADMIN,
 } from "./types";
 
 const globalReducer = (state: InitialState, action: ActionType) => {
@@ -23,17 +24,21 @@ const globalReducer = (state: InitialState, action: ActionType) => {
         ...payload,
         hasSetupBackend: true,
       };
-    case SET_GAME_STATE:
+    case SET_IS_ADMIN:
       return {
         ...state,
-        droppedAsset: payload.droppedAsset,
-        visitor: payload.visitor,
+        isAdmin: payload.isAdmin,
         error: "",
       };
     case SET_ERROR:
       return {
         ...state,
         error: payload?.error,
+      };
+    case SET_CONTENT_MAP:
+      return {
+        ...state,
+        contentMap: payload,
       };
 
     default: {
