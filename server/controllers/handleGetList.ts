@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { DroppedAsset, World, errorHandler, getCredentials } from "../utils/index.js";
+import { errorHandler, getCredentials, getWorldDataObject } from "../utils/index.js";
 import { DroppedAssetInterface } from "@rtsdk/topia";
 
 export const handleGetList = async (req: Request, res: Response): Promise<Response> => {
@@ -7,21 +7,15 @@ export const handleGetList = async (req: Request, res: Response): Promise<Respon
     const credentials = getCredentials(req.query);
     const { profileId, urlSlug } = credentials;
 
-    const world = World.create(urlSlug, { credentials });
-    await world.fetchDataObject();
-    const dataObject = (world.dataObject as any) || {};
-    const droppedAssets: Record<string, any> =
-      typeof dataObject.droppedAssets === "object" && dataObject.droppedAssets !== null
-        ? { ...dataObject.droppedAssets }
-        : {};
+    const { world, droppedAssets } = await getWorldDataObject(credentials);
 
     const refreshedDroppedAssets: Record<string, any> = {};
 
-    const promises = [];
-    for (const id of Object.keys(droppedAssets)) {
-      promises.push(DroppedAsset.get(id, urlSlug, { credentials: { ...credentials, id } }));
-    }
-    const droppedAssetsList: DroppedAssetInterface[] = await Promise.all(promises);
+    await world.fetchDroppedAssets();
+    const allDroppedAssets: { [key: string]: DroppedAssetInterface } = world.droppedAssets;
+    const droppedAssetsList = Object.values(allDroppedAssets).filter(
+      (asset) => asset.id && Object.keys(droppedAssets).includes(asset.id),
+    );
 
     for (const droppedAsset of droppedAssetsList) {
       const { id, topLayerURL, bottomLayerURL, clickableLinks } = droppedAsset;
