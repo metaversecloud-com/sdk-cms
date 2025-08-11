@@ -37,7 +37,7 @@ export const addNewRowToGoogleSheets = async (SSAEvents: SSAEvent[]) => {
         formattedTime,
         identityId,
         displayName,
-        "Boilerplate",
+        "CMS",
         event,
         urlSlug,
       ];

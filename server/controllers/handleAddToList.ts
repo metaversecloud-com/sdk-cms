@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { World, errorHandler, getCredentials } from "../utils/index.js";
+import { errorHandler, getCredentials, getWorldDataObject } from "../utils/index.js";
 
 export const handleAddToList = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -7,20 +7,14 @@ export const handleAddToList = async (req: Request, res: Response): Promise<Resp
     const { profileId, urlSlug } = credentials;
     const { uniqueName, topLayerURL, bottomLayerURL, id, position, links, assetName } = req.body;
 
-    const world = World.create(urlSlug, { credentials });
-    await world.fetchDataObject();
-    const dataObject = (world.dataObject as any) || {};
-    const currentDroppedAssets: Record<string, any> =
-      typeof dataObject.droppedAssets === "object" && dataObject.droppedAssets !== null
-        ? { ...dataObject.droppedAssets }
-        : {};
+    const { world, droppedAssets } = await getWorldDataObject(credentials);
 
-    currentDroppedAssets[id] = { uniqueName, topLayerURL, bottomLayerURL, position, profileId, links, assetName };
+    droppedAssets[id] = { uniqueName, topLayerURL, bottomLayerURL, position, profileId, links, assetName };
 
     const lockId = `${world.urlSlug}-${new Date(Math.round(new Date().getTime() / 60000) * 60000)}`;
 
     await world.updateDataObject(
-      { ...dataObject, droppedAssets: currentDroppedAssets },
+      { droppedAssets },
       {
         analytics: [
           {
