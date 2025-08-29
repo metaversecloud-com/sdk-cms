@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 
 import { AssetInfo, ErrorType } from "@context/types";
 import { backendAPI, setErrorMessage } from "@utils/index";
@@ -6,18 +6,20 @@ import { backendAPI, setErrorMessage } from "@utils/index";
 import { GlobalDispatchContext, GlobalStateContext } from "@/context/GlobalContext";
 
 interface SearchResultProps extends AssetInfo {
-  isAdded: boolean;
   assetName: string;
+  areButtonsDisabled: boolean;
+  setAreButtonsDisabled: (disabled: boolean) => void;
 }
 
 export const SearchResult = ({
+  areButtonsDisabled,
+  setAreButtonsDisabled,
   uniqueName,
   topLayerURL,
   bottomLayerURL,
   id,
   position,
   links,
-  isAdded,
   assetName,
 }: SearchResultProps) => {
   const dispatch = useContext(GlobalDispatchContext)!;
@@ -25,41 +27,50 @@ export const SearchResult = ({
 
   const imageURL = topLayerURL !== "" ? topLayerURL : bottomLayerURL;
 
-  const [adding, setAdding] = useState(false);
-  const [added, setAdded] = useState(isAdded);
+  const [updating, setUpdating] = useState(false);
 
-  // sync isAdded changes
-  useEffect(() => {
-    setAdded(isAdded);
-  }, [isAdded]);
-
-  const handleAddToList = async () => {
-    if (added) return;
-    setAdding(true);
-    try {
-      const resp = await backendAPI.post("/add-to-list", {
-        uniqueName,
-        topLayerURL,
-        bottomLayerURL,
-        id,
-        position,
-        links,
-        assetName,
-      });
-      if (resp.data.success) {
-        setAdded(true);
-        const newMap = {
-          ...contentMap,
-          [id]: { uniqueName, topLayerURL, bottomLayerURL, position, links, assetName },
-        };
-        dispatch({ type: "SET_CONTENT_MAP", payload: newMap });
-      } else {
-        console.warn("Add to list failed:", resp.data);
-      }
-    } catch (err) {
-      setErrorMessage(dispatch, err as ErrorType);
-    } finally {
-      setAdding(false);
+  const handleUpdateList = async () => {
+    setUpdating(true);
+    setAreButtonsDisabled(true);
+    if (contentMap[id]) {
+      await backendAPI
+        .post("/remove-from-list", { id })
+        .then(() => {
+          delete contentMap[id];
+          dispatch({ type: "SET_CONTENT_MAP", payload: contentMap });
+        })
+        .catch((error) => {
+          setErrorMessage(dispatch, error as ErrorType);
+        })
+        .finally(() => {
+          setUpdating(false);
+          setAreButtonsDisabled(false);
+        });
+    } else {
+      await backendAPI
+        .post("/add-to-list", {
+          uniqueName,
+          topLayerURL,
+          bottomLayerURL,
+          id,
+          position,
+          links,
+          assetName,
+        })
+        .then(() => {
+          const newMap = {
+            ...contentMap,
+            [id]: { uniqueName, topLayerURL, bottomLayerURL, position, links, assetName },
+          };
+          dispatch({ type: "SET_CONTENT_MAP", payload: newMap });
+        })
+        .catch((error) => {
+          setErrorMessage(dispatch, error as ErrorType);
+        })
+        .finally(() => {
+          setUpdating(false);
+          setAreButtonsDisabled(false);
+        });
     }
   };
 
@@ -85,16 +96,16 @@ export const SearchResult = ({
         <div className="card-actions">
           <button
             className="btn btn-icon"
-            onClick={handleAddToList}
-            disabled={adding || added}
-            aria-label={adding ? "Adding..." : added ? "Added to list" : "Add to list"}
+            disabled={updating || areButtonsDisabled}
+            onClick={handleUpdateList}
+            aria-label={updating ? "updating..." : contentMap[id] ? "Remove from list" : "Add to list"}
           >
-            {adding ? (
+            {updating ? (
               "..."
-            ) : added ? (
+            ) : contentMap[id] ? (
               <img src="https://sdk-style.s3.amazonaws.com/icons/check.svg" alt="" />
             ) : (
-              <img src="https://sdk-style.s3.amazonaws.com/icons/star.svg" alt="" />
+              <img src="https://sdk-style.s3.amazonaws.com/icons/add.svg" alt="" />
             )}
           </button>
         </div>

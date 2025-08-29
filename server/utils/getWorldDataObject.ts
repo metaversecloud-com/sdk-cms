@@ -1,4 +1,4 @@
-import { Credentials } from "../types/index.js";
+import { Credentials, DroppedAssetType } from "../types/index.js";
 import { errorHandler, World } from "./index.js";
 
 export const getWorldDataObject = async (credentials: Credentials) => {
@@ -12,7 +12,7 @@ export const getWorldDataObject = async (credentials: Credentials) => {
       await world.setDataObject({ droppedAssets: {} }, { lock: { lockId, releaseLock: true } });
     }
 
-    const droppedAssets: Record<string, any> =
+    const droppedAssets: Record<string, DroppedAssetType> =
       typeof dataObject.droppedAssets === "object" && dataObject.droppedAssets !== null
         ? { ...dataObject.droppedAssets }
         : {};

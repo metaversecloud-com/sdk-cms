@@ -8,6 +8,8 @@ import {
   handleTeleport,
   handlePreviewLinks,
   handleGetVisitor,
+  handleRemoveFromList,
+  handleClearList,
 } from "./controllers/index.js";
 import { getVersion } from "./utils/getVersion.js";
 
@@ -38,8 +40,10 @@ router.get("/asset-search", handleAssetSearch);
 router.get("/content-list", handleGetList);
 router.put("/teleport", handleTeleport);
 router.put("/update-link", handleUpdateLink);
+router.put("/clear-list", handleClearList);
 router.put("/reset-list", handleResetList);
 router.put("/preview-links", handlePreviewLinks);
 router.post("/add-to-list", handleAddToList);
+router.post("/remove-from-list", handleRemoveFromList);
 
 export default router;

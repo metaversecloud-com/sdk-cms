@@ -65,8 +65,8 @@ export const ContentCard = ({
           >
             {assetName}
           </h4>
-          <p className="p2"> {uniqueName}</p>
-          <p className="card-description p2">
+          <p className="card-description p2" style={{ height: "58px" }}>
+            {uniqueName} <br />
             {linksLength} {linksLength === 1 ? "link" : "links"} attached{" "}
           </p>
 
@@ -77,7 +77,7 @@ export const ContentCard = ({
               </button>
             )}
             <button className="btn btn-icon" aria-label="Teleport To" onClick={onTeleport}>
-              <img src="https://sdk-style.s3.amazonaws.com/icons/walk.svg" alt="" />
+              <img src="https://sdk-style.s3.amazonaws.com/icons/teleport.svg" alt="" />
             </button>
           </div>
         </div>

@@ -4,7 +4,7 @@ import { useContext, useState } from "react";
 import { SearchBar, SearchResult, PageFooter, ConfirmationModal } from "@/components";
 
 // context
-import { GlobalDispatchContext, GlobalStateContext } from "@/context/GlobalContext";
+import { GlobalDispatchContext } from "@/context/GlobalContext";
 
 // utils
 import { backendAPI, setErrorMessage } from "@/utils";
@@ -14,16 +14,14 @@ import { AssetInfo, ErrorType } from "@/context/types";
 
 export const AdminView = () => {
   const dispatch = useContext(GlobalDispatchContext)!;
-  const { contentMap = {} } = useContext(GlobalStateContext);
-  const isAdded = (id: string) => id in contentMap;
 
   const [searchTerm, setSearchTerm] = useState("");
   const [assets, setAssets] = useState<AssetInfo[]>([]);
 
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [showClearConfirmationModal, setShowClearConfirmationModal] = useState(false);
+  const [showResetConfirmationModal, setShowResetConfirmationModal] = useState(false);
   const [areButtonsDisabled, setAreButtonsDisabled] = useState(false);
 
-  // @TODO: pass areButtonsDisabled into each search result component?
   const onSearch = async (searchValue?: string) => {
     const trimmed = (searchValue ?? searchTerm).trim();
     if (!trimmed) return;
@@ -52,17 +50,42 @@ export const AdminView = () => {
     }
   };
 
-  const handleReset = async () => {
-    try {
-      const resp = await backendAPI.put("/reset-list");
+  const handleClear = async () => {
+    setAreButtonsDisabled(true);
 
-      if (resp.data.success) {
-        console.log("Successfully reset the droppedAssets inside the world data object for CMS list");
-        dispatch({ type: "SET_CONTENT_MAP", payload: {} });
-      }
-    } catch (err) {
-      setErrorMessage(dispatch, err as ErrorType);
-    }
+    await backendAPI
+      .put("/clear-list")
+      .then((response) => {
+        if (response.data.success) {
+          console.log("Successfully cleared the droppedAssets inside the world data object for CMS list");
+          dispatch({ type: "SET_CONTENT_MAP", payload: {} });
+        }
+      })
+      .catch((error) => {
+        setErrorMessage(dispatch, error as ErrorType);
+      })
+      .finally(() => {
+        setAreButtonsDisabled(false);
+      });
+  };
+
+  const handleReset = async () => {
+    setAreButtonsDisabled(true);
+
+    await backendAPI
+      .put("/reset-list")
+      .then((response) => {
+        if (response.data.success) {
+          console.log("Successfully reset the droppedAssets inside the world data object for CMS list");
+          dispatch({ type: "SET_CONTENT_MAP", payload: {} });
+        }
+      })
+      .catch((error) => {
+        setErrorMessage(dispatch, error as ErrorType);
+      })
+      .finally(() => {
+        setAreButtonsDisabled(false);
+      });
   };
 
   return (
@@ -70,52 +93,74 @@ export const AdminView = () => {
       <SearchBar value={searchTerm} onChange={setSearchTerm} onSearch={onSearch} />
 
       {searchTerm === "" ? (
-        <div className="space-y-2">
+        <div className="my-2">
           <h5>Add a New Asset to the Content Manager</h5>
-          <p className="p2">Search by the asset’s unique name to get started.</p>
-          <p className="p2">
+          <p>Search by the asset’s unique name to get started.</p>
+          <br />
+          <p>
             Once added, the asset will appear on the main page, where you can attach and edit linked content anytime.
           </p>
         </div>
       ) : assets.length > 0 ? (
         /* they typed something and we have matches */
-        <ul className="rtsdk-results-list space-y-2">
+        <ul className="my-2">
           {assets.map((asset) => (
-            <SearchResult key={asset.id} {...asset} isAdded={isAdded(asset.id)} />
+            <SearchResult
+              key={asset.id}
+              {...asset}
+              areButtonsDisabled={areButtonsDisabled}
+              setAreButtonsDisabled={setAreButtonsDisabled}
+            />
           ))}
         </ul>
       ) : (
         <div className="text-center">
           <h4>No results found</h4>
-          <div className="space-y-5">
-            <p className="p1">There are no assets in the world with a matching unique name</p>
-            <p className="p1">
-              Find out how to add a unique name to an asset{" "}
-              <a
-                href="https://www.notion.so/Giving-Unique-Names-239a1cfb811f80a295dcef175e060aca?source=copy_link"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 underline hover:text-blue-700"
-              >
-                here
-              </a>
-            </p>
+          <div className="my-5">
+            <p>There are no assets in the world with a matching unique name. To update or edit a unique name:</p>
+            <ol className="text-left list-decimal pl-6 pt-4 p1">
+              <li>Enter builder mode</li>
+              <li>Click an asset</li>
+              <li>
+                On the edit menu that opens on the right side of the screen, enter a unique name in the designated
+                field.
+              </li>
+            </ol>
           </div>
         </div>
       )}
 
       <PageFooter>
-        <button className="btn btn-danger" onClick={() => setShowConfirmationModal(true)} disabled={areButtonsDisabled}>
+        <button
+          className="btn btn-danger-outline mb-2"
+          onClick={() => setShowClearConfirmationModal(true)}
+          disabled={areButtonsDisabled}
+        >
+          Remove all items from list
+        </button>
+        <button
+          className="btn btn-danger"
+          onClick={() => setShowResetConfirmationModal(true)}
+          disabled={areButtonsDisabled}
+        >
           Reset Content List
         </button>
       </PageFooter>
 
-      {showConfirmationModal && (
+      {showClearConfirmationModal && (
+        <ConfirmationModal
+          title="Clear content list?"
+          message="This will clear the current content list for this world. All links will remain unchanged. Are you sure?"
+          handleOnConfirm={handleClear}
+          handleToggleShowConfirmationModal={() => setShowClearConfirmationModal((s) => !s)}
+        />
+      )}
+      {showResetConfirmationModal && (
         <ConfirmationModal
           title="Reset content list?"
-          message="This will clear the current content list for this world. Are you sure?"
+          message="This will reset the current content list for this world. All links will be removed. Are you sure?"
           handleOnConfirm={handleReset}
-          handleToggleShowConfirmationModal={() => setShowConfirmationModal((s) => !s)}
+          handleToggleShowConfirmationModal={() => setShowResetConfirmationModal((s) => !s)}
         />
       )}
     </>
