@@ -6,24 +6,22 @@ import type { DroppedAssetInterface } from "@rtsdk/topia";
 export const handleAssetSearch = async (req: Request, res: Response): Promise<Response> => {
   try {
     const credentials = getCredentials(req.query);
-    const { urlSlug } = credentials;
+    const { assetId, urlSlug } = credentials;
 
-    // @TODO?: can I save resources by instead using the same instances created in handleGetGameState? vvv
-    const world = World.create(urlSlug, { credentials });
-
-    await world.fetchDataObject();
     const search = (req.query.search as string) || "";
 
-    if (search == "") {
-      return res.json({ assets: [], success: true });
-    }
+    if (search == "") return res.json({ assets: [], success: true });
+
+    const world = World.create(urlSlug, { credentials });
 
     const assets = (await world.fetchDroppedAssetsWithUniqueName({
       uniqueName: search,
       isPartial: true,
     })) as DroppedAssetInterface[];
 
-    return res.json({ assets, success: true });
+    const filteredAssets = assets.filter((asset) => asset.id !== assetId);
+
+    return res.json({ assets: filteredAssets, success: true });
   } catch (error) {
     return errorHandler({
       error,
