@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Visitor, errorHandler, getCredentials } from "../utils/index.js";
+import { DroppedAsset, Visitor, errorHandler, getCredentials } from "../utils/index.js";
 
 export const handleTeleport = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -8,19 +8,14 @@ export const handleTeleport = async (req: Request, res: Response): Promise<Respo
 
     const visitor = Visitor.create(visitorId, urlSlug, { credentials });
 
-    const { position } = req.body as {
-      id: string;
-      position: { x: number; y: number };
-    };
+    const { id } = req.body;
 
-    if (!position || typeof position.x !== "number" || typeof position.y !== "number") {
-      return res.status(400).json({ error: "Missing or invalid position" });
-    }
+    const droppedAsset = await DroppedAsset.get(id, urlSlug, { credentials });
 
     await visitor.moveVisitor({
       shouldTeleportVisitor: true,
-      x: position.x,
-      y: position.y,
+      x: droppedAsset.position.x,
+      y: droppedAsset.position.y,
     });
 
     await visitor.updateDataObject(

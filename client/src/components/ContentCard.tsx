@@ -15,15 +15,7 @@ interface ContentCardProps extends AssetInfo {
   id: string;
 }
 
-export const ContentCard = ({
-  id,
-  uniqueName,
-  topLayerURL,
-  bottomLayerURL,
-  position,
-  links,
-  assetName,
-}: ContentCardProps) => {
+export const ContentCard = ({ id, uniqueName, topLayerURL, bottomLayerURL, links, assetName }: ContentCardProps) => {
   const imageURL = topLayerURL || bottomLayerURL || "";
   const dispatch = useContext(GlobalDispatchContext);
   const { isAdmin } = useContext(GlobalStateContext);
@@ -37,7 +29,7 @@ export const ContentCard = ({
 
   const onTeleport = async () => {
     try {
-      const resp = await backendAPI.put("/teleport", { id, position });
+      const resp = await backendAPI.put("/teleport", { id });
 
       if (resp.data.success) {
         console.log("teleported to ", id, " successfully");
