@@ -1,15 +1,15 @@
 import { Request, Response } from "express";
 import { errorHandler, getCredentials, getWorldDataObject } from "../utils/index.js";
 
-export const handleAddToList = async (req: Request, res: Response): Promise<Response> => {
+export const handleRemoveFromList = async (req: Request, res: Response): Promise<Response> => {
   try {
     const credentials = getCredentials(req.query);
     const { profileId, urlSlug } = credentials;
-    const { uniqueName, topLayerURL, bottomLayerURL, id, position, links, assetName } = req.body;
+    const { id } = req.body;
 
     const { world, droppedAssets } = await getWorldDataObject(credentials);
 
-    droppedAssets[id] = { uniqueName, topLayerURL, bottomLayerURL, position, profileId, links, assetName };
+    delete droppedAssets[id];
 
     const lockId = `${world.urlSlug}-${new Date(Math.round(new Date().getTime() / 60000) * 60000)}`;
 
@@ -18,7 +18,7 @@ export const handleAddToList = async (req: Request, res: Response): Promise<Resp
       {
         analytics: [
           {
-            analyticName: "content_list_adds",
+            analyticName: "content_list_removes",
             profileId,
             urlSlug,
             uniqueKey: profileId,
@@ -32,8 +32,8 @@ export const handleAddToList = async (req: Request, res: Response): Promise<Resp
   } catch (error) {
     return errorHandler({
       error,
-      functionName: "handleAddToList",
-      message: "Error adding dropped asset to list",
+      functionName: "handleRemoveFromList",
+      message: "Error removing dropped asset from list",
       req,
       res,
     });

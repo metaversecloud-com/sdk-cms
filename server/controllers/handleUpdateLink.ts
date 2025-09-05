@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
-import { DroppedAsset, World, errorHandler, getCredentials } from "../utils/index.js";
-
+import { DroppedAsset, errorHandler, getCredentials, getWorldDataObject } from "../utils/index.js";
 import type { DroppedAssetInterface } from "@rtsdk/topia";
 
 export interface ClickableLinkInfo {
@@ -20,21 +19,15 @@ export const handleUpdateLink = async (req: Request, res: Response): Promise<Res
       links: ClickableLinkInfo[];
     };
 
-    const world = World.create(urlSlug, { credentials });
-    await world.fetchDataObject();
-    const dataObject = (world.dataObject as any) || {};
-    const currentDroppedAssets: Record<string, any> =
-      typeof dataObject.droppedAssets === "object" && dataObject.droppedAssets !== null
-        ? { ...dataObject.droppedAssets }
-        : {};
-    const uniqueName = currentDroppedAssets[id].uniqueName;
+    const { world, droppedAssets } = await getWorldDataObject(credentials);
 
-    currentDroppedAssets[id].links = links;
+    droppedAssets[id].links = links;
+    const uniqueName = droppedAssets[id].uniqueName;
 
     const lockId = `${world.urlSlug}-${new Date(Math.round(new Date().getTime() / 60000) * 60000)}`;
 
     await world.updateDataObject(
-      { ...dataObject, droppedAssets: currentDroppedAssets },
+      { droppedAssets },
       {
         analytics: [
           {
@@ -48,43 +41,33 @@ export const handleUpdateLink = async (req: Request, res: Response): Promise<Res
       },
     );
 
-    // get asset
-    const droppedAsset = DroppedAsset.create(id, urlSlug, { credentials });
+    const assets = await world.fetchDroppedAssetsWithUniqueName({
+      uniqueName,
+      isPartial: false,
+    });
+    const droppedAsset = assets.find((a: DroppedAssetInterface) => a.id === id);
+    if (!droppedAsset) {
+      console.warn(`No fetched dropped asset matched id ${id} for uniqueName "${uniqueName}"`);
+      return res.json({ success: false });
+    }
 
-    // remedy links
+    const linksPayload = [];
     for (let link of links) {
-      if (link.clickableLink === "") {
-        if (link.linkId) {
-          // user removing existing link
-          await droppedAsset.removeClickableLink({ linkId: link.linkId });
-        }
-        continue;
-      }
-      if (link.linkId) {
-        // user updating old link
+      if (link.clickableLink !== "") {
         // pull linkId out so it doesn’t end up passed as linkId instead of existingLinkId
         const { linkId, ...rest } = link;
-        await droppedAsset.updateClickableLinkMulti({
+        linksPayload.push({
           ...rest,
-          existingLinkId: link.linkId,
-        });
-      } else {
-        // user adding a fresh (new) link
-        await droppedAsset.updateClickableLinkMulti({
-          clickableLink: link.clickableLink,
-          isForceLinkInIframe: true,
-          isOpenLinkInDrawer: false,
+          existingLinkId: link.linkId || undefined,
         });
       }
     }
 
-    const newAssets = (await world.fetchDroppedAssetsWithUniqueName({
-      uniqueName: uniqueName,
-      isPartial: false,
-    })) as DroppedAssetInterface[];
-    const newLinks = (newAssets[0] as any).clickableLinks;
+    await droppedAsset.setClickableLinkMulti({
+      clickableLinks: linksPayload,
+    });
 
-    return res.json({ newLinks, success: true });
+    return res.json({ newLinks: droppedAsset.clickableLinks, success: true });
   } catch (error) {
     return errorHandler({
       error,

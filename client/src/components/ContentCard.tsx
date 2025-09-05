@@ -15,15 +15,7 @@ interface ContentCardProps extends AssetInfo {
   id: string;
 }
 
-export const ContentCard = ({
-  id,
-  uniqueName,
-  topLayerURL,
-  bottomLayerURL,
-  position,
-  links,
-  assetName,
-}: ContentCardProps) => {
+export const ContentCard = ({ id, uniqueName, topLayerURL, bottomLayerURL, links, assetName }: ContentCardProps) => {
   const imageURL = topLayerURL || bottomLayerURL || "";
   const dispatch = useContext(GlobalDispatchContext);
   const { isAdmin } = useContext(GlobalStateContext);
@@ -37,7 +29,7 @@ export const ContentCard = ({
 
   const onTeleport = async () => {
     try {
-      const resp = await backendAPI.put("/teleport", { id, position });
+      const resp = await backendAPI.put("/teleport", { id });
 
       if (resp.data.success) {
         console.log("teleported to ", id, " successfully");
@@ -65,8 +57,8 @@ export const ContentCard = ({
           >
             {assetName}
           </h4>
-          <p className="p2"> {uniqueName}</p>
-          <p className="card-description p2">
+          <p className="card-description p2" style={{ height: "58px" }}>
+            {uniqueName} <br />
             {linksLength} {linksLength === 1 ? "link" : "links"} attached{" "}
           </p>
 
@@ -77,7 +69,7 @@ export const ContentCard = ({
               </button>
             )}
             <button className="btn btn-icon" aria-label="Teleport To" onClick={onTeleport}>
-              <img src="https://sdk-style.s3.amazonaws.com/icons/walk.svg" alt="" />
+              <img src="https://sdk-style.s3.amazonaws.com/icons/teleport.svg" alt="" />
             </button>
           </div>
         </div>
