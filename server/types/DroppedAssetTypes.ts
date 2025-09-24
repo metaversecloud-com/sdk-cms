@@ -11,10 +11,6 @@ export type DroppedAssetType = {
   uniqueName: string;
   topLayerURL: string;
   bottomLayerURL: string;
-  position: {
-    x: number;
-    y: number;
-  };
   links?: ClickableLinkType[];
   clickableLinks?: ClickableLinkType[];
   assetName: string;

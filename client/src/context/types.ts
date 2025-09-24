@@ -44,10 +44,6 @@ export interface AssetInfo {
   uniqueName: string;
   topLayerURL: string;
   bottomLayerURL: string;
-  position: {
-    x: number;
-    y: number;
-  };
   links?: ClickableLinkInfo[];
   clickableLinks?: ClickableLinkInfo[];
   assetName: string;
