@@ -37,7 +37,6 @@ export const AdminView = () => {
           uniqueName: a.uniqueName,
           topLayerURL: a.topLayerURL,
           bottomLayerURL: a.bottomLayerURL,
-          position: a.position,
           links: a.clickableLinks,
           assetName: a.assetName,
         }));

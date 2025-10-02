@@ -5,11 +5,11 @@ export const handleAddToList = async (req: Request, res: Response): Promise<Resp
   try {
     const credentials = getCredentials(req.query);
     const { profileId, urlSlug } = credentials;
-    const { uniqueName, topLayerURL, bottomLayerURL, id, position, links, assetName } = req.body;
+    const { uniqueName, topLayerURL, bottomLayerURL, id, links, assetName } = req.body;
 
     const { world, droppedAssets } = await getWorldDataObject(credentials);
 
-    droppedAssets[id] = { uniqueName, topLayerURL, bottomLayerURL, position, profileId, links, assetName };
+    droppedAssets[id] = { uniqueName, topLayerURL, bottomLayerURL, profileId, links, assetName };
 
     const lockId = `${world.urlSlug}-${new Date(Math.round(new Date().getTime() / 60000) * 60000)}`;
 

@@ -26,7 +26,6 @@ export const ContentList = () => {
           uniqueName={info.uniqueName}
           topLayerURL={info.topLayerURL}
           bottomLayerURL={info.bottomLayerURL}
-          position={info.position}
           links={info.links}
           assetName={info.assetName}
         />
