@@ -22,7 +22,6 @@ export const handleUpdateLink = async (req: Request, res: Response): Promise<Res
     const { world, droppedAssets } = await getWorldDataObject(credentials);
 
     droppedAssets[id].links = links;
-    const uniqueName = droppedAssets[id].uniqueName;
 
     const lockId = `${world.urlSlug}-${new Date(Math.round(new Date().getTime() / 60000) * 60000)}`;
 
@@ -41,16 +40,6 @@ export const handleUpdateLink = async (req: Request, res: Response): Promise<Res
       },
     );
 
-    const assets = await world.fetchDroppedAssetsWithUniqueName({
-      uniqueName,
-      isPartial: false,
-    });
-    const droppedAsset = assets.find((a: DroppedAssetInterface) => a.id === id);
-    if (!droppedAsset) {
-      console.warn(`No fetched dropped asset matched id ${id} for uniqueName "${uniqueName}"`);
-      return res.json({ success: false });
-    }
-
     const linksPayload = [];
     for (let link of links) {
       if (link.clickableLink !== "") {
@@ -59,9 +48,12 @@ export const handleUpdateLink = async (req: Request, res: Response): Promise<Res
         linksPayload.push({
           ...rest,
           existingLinkId: link.linkId || undefined,
+          linkSamlQueryParams: undefined,
         });
       }
     }
+
+    const droppedAsset: DroppedAssetInterface = await DroppedAsset.create(id, urlSlug, { credentials });
 
     await droppedAsset.setClickableLinkMulti({
       clickableLinks: linksPayload,
