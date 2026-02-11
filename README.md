@@ -21,6 +21,7 @@ CMS is a Content Management System application built on the Topia SDK that allow
 ## Key Features
 
 ### User Features
+
 - **Featured Content Display**: View a list of admin-curated featured content
 - **Content Cards**: Each item displays thumbnail, name, and number of attached links
 - **Teleportation**: Click to teleport directly to any featured asset in the world
@@ -47,6 +48,7 @@ CMS is a Content Management System application built on the Topia SDK that allow
 ### Data Objects
 
 **World Data Object**:
+
 ```typescript
 {
   droppedAssets: {
@@ -64,6 +66,7 @@ CMS is a Content Management System application built on the Topia SDK that allow
 ```
 
 **Link Structure**:
+
 ```typescript
 {
   clickableLink: string,        // Full URL
@@ -73,6 +76,18 @@ CMS is a Content Management System application built on the Topia SDK that allow
   linkId: string
 }
 ```
+
+## Environment Variables
+
+Create a `.env` file in the root directory. See `.env-example` for a template.
+
+| Variable               | Description                                                                        | Required |
+| ---------------------- | ---------------------------------------------------------------------------------- | -------- |
+| `NODE_ENV`             | Node environment                                                                   | No       |
+| `SKIP_PREFLIGHT_CHECK` | Skip CRA preflight check                                                           | No       |
+| `INSTANCE_DOMAIN`      | Topia API domain (`api.topia.io` for production, `api-stage.topia.io` for staging) | Yes      |
+| `INTERACTIVE_KEY`      | Topia interactive app key                                                          | Yes      |
+| `INTERACTIVE_SECRET`   | Topia interactive app secret                                                       | Yes      |
 
 ## Developers
 
@@ -86,15 +101,9 @@ CMS is a Content Management System application built on the Topia SDK that allow
 
 ### Add your .env environmental variables
 
-```
-API_KEY=xxxxxxxxxxxxx
-INSTANCE_DOMAIN=api.topia.io
-INSTANCE_PROTOCOL=https
-INTERACTIVE_KEY=xxxxxxxxxxxxx
-INTERACTIVE_SECRET=xxxxxxxxxxxxxx
-```
+See [Environment Variables](#environment-variables) above.
 
-### Where to find API_KEY, INTERACTIVE_KEY and INTERACTIVE_SECRET
+### Where to find INTERACTIVE_KEY and INTERACTIVE_SECRET
 
 [Topia Dev Account Dashboard](https://dev.topia.io/t/dashboard/integrations)
 
