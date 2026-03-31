@@ -65,6 +65,16 @@ CMS is a Content Management System application built on the Topia SDK that allow
 }
 ```
 
+**Key Asset Data Object**:
+
+Optionally include an array of strings. If the list hasn't been populated yet the app will use the `uniqueNames` in the key asset's data object to search the world for partial matches and default the list accordingly.
+
+```typescript
+{
+  uniqueNames: ["learning"];
+}
+```
+
 **Link Structure**:
 
 ```typescript
