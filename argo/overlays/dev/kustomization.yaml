@@ -27,3 +27,4 @@ images:
   - name: cms0
     newName: 368076259134.dkr.ecr.us-east-1.amazonaws.com/sdk-example
     digest: sha256:354b045b69b7e9e79e0e17c9b2768b6937321a6cd4e4e164735d0ebd06017017
+    newTag: sdk-cms
