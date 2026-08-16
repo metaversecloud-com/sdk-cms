@@ -26,5 +26,5 @@ patches:
 images:
   - name: cms0
     newName: 368076259134.dkr.ecr.us-east-1.amazonaws.com/sdk-example
-    digest: sha256:354b045b69b7e9e79e0e17c9b2768b6937321a6cd4e4e164735d0ebd06017017
+    digest: sha256:97e90705581b4a9abd1a59fd78cf60195ce25b1163c3c76e5f50db154fcf9a41
     newTag: sdk-cms
