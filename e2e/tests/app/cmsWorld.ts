@@ -1,6 +1,6 @@
 // Seed helpers for the content manager: dropped assets admins can feature, and the list the app keeps in
 // the world data object (droppedAssets: { [assetId]: entry }).
-import type { Locator, Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 export type Link = {
   clickableLink: string;
@@ -53,9 +53,5 @@ export const search = async (page: Page, term: string) => {
   await page.getByPlaceholder("Search by unique name...").fill(term);
 };
 
-/**
- * Clicks an icon-only button (edit, teleport, add, delete). Their only content is a CDN icon, which the
- * test browser never loads (fixtures.ts aborts non-localhost requests), so the button has no size and a
- * normal click would wait for it to become visible.
- */
-export const press = (button: Locator) => button.dispatchEvent("click");
+// Icon-only buttons (edit, teleport, add, delete) have no size: their CDN icon never loads.
+export { press } from "../../helpers/press";
