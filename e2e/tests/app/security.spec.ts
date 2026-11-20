@@ -10,7 +10,6 @@ const desk = asset("a-desk", "Desk", { clickableLinks: [link("desk-1", "d1")] })
 const listed = { [lamp.id]: entry(lamp) };
 
 test("asset search never returns the interactive secret or a signed JWT", async ({ request, world }) => {
-  test.fail(true, "EXP-429: asset search returns SDK DroppedAsset objects (topia.interactiveSecret, InteractiveJWT)");
   await world.seed({ isAdmin: true, extraAssets: { [lamp.id]: lamp } });
 
   const response = await request.get(`${world.api("/asset-search")}&search=cms`);

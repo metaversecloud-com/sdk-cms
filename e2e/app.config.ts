@@ -64,10 +64,6 @@ export type RouteSpec = {
   knownBugs?: KnownBugs;
 };
 
-// getCredentials (protected file) returns { error } instead of throwing, so every route that
-// uses it has this bug until it's fixed there.
-const GET_CREDENTIALS_DOESNT_THROW = "EXP-428 #6: getCredentials doesn't throw";
-
 /**
  * API routes that read the session credentials (getCredentials). Each one must reject missing or
  * foreign credentials and must never send the interactive secret to the browser. List them all.
@@ -76,36 +72,29 @@ const GET_CREDENTIALS_DOESNT_THROW = "EXP-428 #6: getCredentials doesn't throw";
  * the platform tests can't read its body and time out. Cover an SSE route's credential checks in
  * tests/app instead (open it with page.request or fetch + AbortController and check the status).
  */
-const UNNAMED = { unnamedCredentialError: GET_CREDENTIALS_DOESNT_THROW };
-// With getCredentials not throwing, an empty search answers before any Topia call could fail.
-const EMPTY_SEARCH = "EXP-428 #6: getCredentials doesn't throw; an empty search answers before any Topia call";
 // The link-preview route never reads the session credentials: anyone can make the server fetch any URL.
 const PREVIEW_NO_CREDENTIALS = "EXP-461: /preview-links has no credential check (server fetches any URL)";
 
 export const CREDENTIALED_ROUTES: RouteSpec[] = [
-  { method: "get", path: "/visitor", knownBugs: UNNAMED },
-  {
-    method: "get",
-    path: "/asset-search",
-    knownBugs: { ...UNNAMED, acceptsMissingCredentials: EMPTY_SEARCH, acceptsForeignCredentials: EMPTY_SEARCH },
-  },
-  { method: "get", path: "/content-list", knownBugs: UNNAMED },
-  { method: "put", path: "/teleport", data: { id: "key-asset" }, knownBugs: UNNAMED },
-  { method: "put", path: "/update-link", data: { id: "key-asset", links: [] }, knownBugs: UNNAMED },
-  { method: "put", path: "/clear-list", knownBugs: UNNAMED },
-  { method: "put", path: "/reset-list", knownBugs: UNNAMED },
+  { method: "get", path: "/visitor" },
+  { method: "get", path: "/asset-search" },
+  { method: "get", path: "/content-list" },
+  { method: "put", path: "/teleport", data: { id: "key-asset" } },
+  { method: "put", path: "/update-link", data: { id: "key-asset", links: [] } },
+  { method: "put", path: "/clear-list" },
+  { method: "put", path: "/reset-list" },
   {
     method: "put",
     path: "/preview-links",
     data: { links: [] },
     knownBugs: {
-      ...UNNAMED,
       acceptsMissingCredentials: PREVIEW_NO_CREDENTIALS,
       acceptsForeignCredentials: PREVIEW_NO_CREDENTIALS,
+      unnamedCredentialError: PREVIEW_NO_CREDENTIALS,
     },
   },
-  { method: "post", path: "/add-to-list", data: { id: "key-asset", uniqueName: "e2e-asset" }, knownBugs: UNNAMED },
-  { method: "post", path: "/remove-from-list", data: { id: "key-asset" }, knownBugs: UNNAMED },
+  { method: "post", path: "/add-to-list", data: { id: "key-asset", uniqueName: "e2e-asset" } },
+  { method: "post", path: "/remove-from-list", data: { id: "key-asset" } },
 ];
 
 /**
@@ -162,10 +151,7 @@ export const HEALTH_KNOWN_BUGS: { incompleteContract?: string } = {};
  * registers its own logging handler. Fix: process.removeAllListeners("unhandledRejection") before
  * registering the app's handler.
  */
-export const PROCESS_KNOWN_BUGS: { exitsOnUnhandledRejection?: string } = {
-  exitsOnUnhandledRejection:
-    "EXP-472: @rtsdk/topia's unhandledRejection hook calls process.exit(1); server/index.ts's handler doesn't stop it",
-};
+export const PROCESS_KNOWN_BUGS: { exitsOnUnhandledRejection?: string } = {};
 
 /**
  * The request system.spec sends a malformed JSON body to. Default: the first POST/PUT route in
@@ -181,9 +167,7 @@ export const MALFORMED_JSON_REQUEST: { method: "post" | "put"; path: string } | 
  * middleware after express.json()). Fix: an error middleware that answers body-parser errors
  * (err.type === "entity.parse.failed") with res.status(400).json({ success: false, error: "Invalid JSON" }).
  */
-export const ERROR_KNOWN_BUGS: { malformedJson?: string } = {
-  malformedJson: "EXP-473: no error middleware: Express' default error page shows the stack trace (NODE_ENV isn't production)",
-};
+export const ERROR_KNOWN_BUGS: { malformedJson?: string } = {};
 
 /**
  * true starts mock-redis/server.mjs (an in-memory Redis) next to mock-topia and points REDIS_URL at it
